@@ -36,9 +36,24 @@ export default function App() {
     setIsAdminOpen(true);
   };
 
-  const handleSelectService = (serviceId: string) => {
+  const handleSelectService = (serviceId: string, hash?: string) => {
     setSelectedServiceId(serviceId || null);
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    if (!serviceId) {
+      if (hash) {
+        setTimeout(() => {
+          const element = document.querySelector(hash);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          } else if (hash === '#home') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }, 80);
+      } else {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+    } else {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
   };
 
   const activeService = SERVICE_DETAILS.find(s => s.id === selectedServiceId);

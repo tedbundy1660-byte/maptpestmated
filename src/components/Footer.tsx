@@ -1,10 +1,11 @@
+import React from 'react';
 import { Facebook, Instagram, Linkedin, Youtube, Phone, Mail, MapPin, Database, Award, CheckCircle } from 'lucide-react';
 import { SERVICES } from '../data';
 
 interface FooterProps {
   onBookCall: () => void;
   onOpenAdmin: () => void;
-  onSelectService: (serviceId: string) => void;
+  onSelectService: (serviceId: string, hash?: string) => void;
 }
 
 export default function Footer({ onBookCall, onOpenAdmin, onSelectService }: FooterProps) {
@@ -13,10 +14,10 @@ export default function Footer({ onBookCall, onOpenAdmin, onSelectService }: Foo
   };
 
   const quickLinks = [
-    { label: 'Home', href: '#home', onClick: () => onSelectService('') },
-    { label: 'How It Works', href: '#how-it-works', onClick: () => onSelectService('') },
-    { label: 'Pricing', href: '#pricing', onClick: () => onSelectService('') },
-    { label: 'FAQ', href: '#faq', onClick: () => onSelectService('') },
+    { label: 'Home', href: '#home', onClick: (e: React.MouseEvent) => { e.preventDefault(); onSelectService('', '#home'); } },
+    { label: 'How It Works', href: '#how-it-works', onClick: (e: React.MouseEvent) => { e.preventDefault(); onSelectService('', '#how-it-works'); } },
+    { label: 'Pricing', href: '#pricing', onClick: (e: React.MouseEvent) => { e.preventDefault(); onSelectService('', '#pricing'); } },
+    { label: 'FAQ', href: '#faq', onClick: (e: React.MouseEvent) => { e.preventDefault(); onSelectService('', '#faq'); } },
   ];
 
   return (
@@ -33,7 +34,14 @@ export default function Footer({ onBookCall, onOpenAdmin, onSelectService }: Foo
           {/* Column 1: Brand Info (4 cols on large, full on smaller) */}
           <div className="col-span-2 md:col-span-4 space-y-4">
             {/* Logo */}
-            <a href="#home" onClick={() => onSelectService('')} className="inline-flex items-center gap-2.5 group">
+            <a 
+              href="#home" 
+              onClick={(e) => {
+                e.preventDefault();
+                onSelectService('', '#home');
+              }} 
+              className="inline-flex items-center gap-2.5 group"
+            >
               <div className="relative flex items-end gap-[3px] h-7 w-7 pb-1.5 pt-1 px-1 rounded-lg bg-amber-500/10 border border-amber-500/20">
                 <div className="w-[4px] h-[35%] bg-amber-500 rounded-sm" />
                 <div className="w-[4px] h-[65%] bg-amber-500 rounded-sm" />

@@ -5,7 +5,7 @@ import { SERVICES } from '../data';
 interface HeaderProps {
   onBookCall: () => void;
   onOpenAdmin: () => void;
-  onSelectService: (serviceId: string) => void;
+  onSelectService: (serviceId: string, hash?: string) => void;
 }
 
 export default function Header({ onBookCall, onOpenAdmin, onSelectService }: HeaderProps) {
@@ -51,7 +51,15 @@ export default function Header({ onBookCall, onOpenAdmin, onSelectService }: Hea
         <div className="flex items-center justify-between">
           
           {/* Logo with Yellow Rising Bars */}
-          <a href="#home" onClick={() => onSelectService('')} className="flex items-center gap-2.5 group" id="logo-link">
+          <a 
+            href="#home" 
+            onClick={(e) => {
+              e.preventDefault();
+              onSelectService('', '#home');
+            }} 
+            className="flex items-center gap-2.5 group" 
+            id="logo-link"
+          >
             <div className="relative flex items-end gap-[3px] h-7 w-7 pb-1.5 pt-1 px-1 rounded-lg bg-amber-500/10 border border-amber-500/20 group-hover:bg-amber-500/15 transition-colors">
               <div className="w-[4px] h-[35%] bg-amber-500 rounded-sm group-hover:h-[45%] transition-all duration-300" />
               <div className="w-[4px] h-[65%] bg-amber-500 rounded-sm group-hover:h-[75%] transition-all duration-300" />
@@ -70,7 +78,14 @@ export default function Header({ onBookCall, onOpenAdmin, onSelectService }: Hea
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
-            <a href="#home" onClick={() => onSelectService('')} className="text-slate-300 hover:text-white text-xs font-semibold tracking-wide transition-colors">
+            <a 
+              href="#home" 
+              onClick={(e) => {
+                e.preventDefault();
+                onSelectService('', '#home');
+              }} 
+              className="text-slate-300 hover:text-white text-xs font-semibold tracking-wide transition-colors"
+            >
               Home
             </a>
 
@@ -111,7 +126,10 @@ export default function Header({ onBookCall, onOpenAdmin, onSelectService }: Hea
               <a
                 key={link.label}
                 href={link.href}
-                onClick={() => onSelectService('')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onSelectService('', link.href);
+                }}
                 className="text-slate-300 hover:text-white text-xs font-semibold tracking-wide transition-colors"
               >
                 {link.label}
@@ -169,9 +187,10 @@ export default function Header({ onBookCall, onOpenAdmin, onSelectService }: Hea
           <div className="flex flex-col gap-3">
             <a
               href="#home"
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
                 setIsMobileMenuOpen(false);
-                onSelectService('');
+                onSelectService('', '#home');
               }}
               className="text-slate-300 hover:text-white py-2 text-sm font-semibold border-b border-slate-900/40"
             >
@@ -201,9 +220,10 @@ export default function Header({ onBookCall, onOpenAdmin, onSelectService }: Hea
               <a
                 key={link.label}
                 href={link.href}
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
                   setIsMobileMenuOpen(false);
-                  onSelectService('');
+                  onSelectService('', link.href);
                 }}
                 className="text-slate-300 hover:text-white py-2 text-sm font-semibold border-b border-slate-900/40"
               >
