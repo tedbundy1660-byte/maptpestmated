@@ -5,12 +5,17 @@ import { SERVICES } from '../data';
 interface HeaderProps {
   onBookCall: () => void;
   onOpenAdmin: () => void;
+  onSelectService: (serviceId: string) => void;
 }
 
-export default function Header({ onBookCall, onOpenAdmin }: HeaderProps) {
+export default function Header({ onBookCall, onOpenAdmin, onSelectService }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+
+  const getServiceId = (name: string) => {
+    return name.toLowerCase().replace(/ & /g, '-&-').replace(/ /g, '-');
+  };
 
   // Detect scroll to style header
   useEffect(() => {
@@ -88,7 +93,7 @@ export default function Header({ onBookCall, onOpenAdmin }: HeaderProps) {
                       <button
                         key={srv}
                         onClick={() => {
-                          onBookCall();
+                          onSelectService(getServiceId(srv));
                           setIsServicesOpen(false);
                         }}
                         className="text-left w-full px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-900 hover:text-white transition-all flex items-center gap-2 group/item"
@@ -178,7 +183,7 @@ export default function Header({ onBookCall, onOpenAdmin }: HeaderProps) {
                     key={srv}
                     onClick={() => {
                       setIsMobileMenuOpen(false);
-                      onBookCall();
+                      onSelectService(getServiceId(srv));
                     }}
                     className="text-left py-1 text-slate-400 text-xs hover:text-white transition-colors"
                   >

@@ -4,14 +4,19 @@ import { SERVICES } from '../data';
 interface FooterProps {
   onBookCall: () => void;
   onOpenAdmin: () => void;
+  onSelectService: (serviceId: string) => void;
 }
 
-export default function Footer({ onBookCall, onOpenAdmin }: FooterProps) {
+export default function Footer({ onBookCall, onOpenAdmin, onSelectService }: FooterProps) {
+  const getServiceId = (name: string) => {
+    return name.toLowerCase().replace(/ & /g, '-&-').replace(/ /g, '-');
+  };
+
   const quickLinks = [
-    { label: 'Home', href: '#home' },
-    { label: 'How It Works', href: '#how-it-works' },
-    { label: 'Pricing', href: '#pricing' },
-    { label: 'FAQ', href: '#faq' },
+    { label: 'Home', href: '#home', onClick: () => onSelectService('') },
+    { label: 'How It Works', href: '#how-it-works', onClick: () => onSelectService('') },
+    { label: 'Pricing', href: '#pricing', onClick: () => onSelectService('') },
+    { label: 'FAQ', href: '#faq', onClick: () => onSelectService('') },
   ];
 
   return (
@@ -28,7 +33,7 @@ export default function Footer({ onBookCall, onOpenAdmin }: FooterProps) {
           {/* Column 1: Brand Info (4 cols on large, full on smaller) */}
           <div className="col-span-2 md:col-span-4 space-y-4">
             {/* Logo */}
-            <a href="#home" className="inline-flex items-center gap-2.5 group">
+            <a href="#home" onClick={() => onSelectService('')} className="inline-flex items-center gap-2.5 group">
               <div className="relative flex items-end gap-[3px] h-7 w-7 pb-1.5 pt-1 px-1 rounded-lg bg-amber-500/10 border border-amber-500/20">
                 <div className="w-[4px] h-[35%] bg-amber-500 rounded-sm" />
                 <div className="w-[4px] h-[65%] bg-amber-500 rounded-sm" />
@@ -80,7 +85,7 @@ export default function Footer({ onBookCall, onOpenAdmin }: FooterProps) {
             <ul className="space-y-2 text-[11px]">
               {quickLinks.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="hover:text-amber-400 transition-colors">
+                  <a href={link.href} onClick={link.onClick} className="hover:text-amber-400 transition-colors">
                     {link.label}
                   </a>
                 </li>
@@ -100,9 +105,9 @@ export default function Footer({ onBookCall, onOpenAdmin }: FooterProps) {
               Our Services
             </h4>
             <ul className="space-y-2 text-[11px]">
-              {SERVICES.slice(0, 5).map((srv) => (
+              {SERVICES.map((srv) => (
                 <li key={srv}>
-                  <button onClick={() => onBookCall()} className="hover:text-amber-400 transition-colors text-left">
+                  <button onClick={() => onSelectService(getServiceId(srv))} className="hover:text-amber-400 transition-colors text-left">
                     {srv}
                   </button>
                 </li>

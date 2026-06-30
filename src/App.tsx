@@ -8,19 +8,24 @@ import FAQAndReturn from './components/FAQAndReturn';
 import Footer from './components/Footer';
 import BookingModal from './components/BookingModal';
 import AdminLeads from './components/AdminLeads';
+import ServiceDetailView from './components/ServiceDetailView';
+import { SERVICE_DETAILS } from './data';
 
 export default function App() {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [defaultService, setDefaultService] = useState('');
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
 
-  const handleBookCall = (planName?: string) => {
-    if (planName === 'Starter') {
+  const handleBookCall = (planOrService?: string) => {
+    if (planOrService === 'Starter') {
       setDefaultService('Google Maps Optimization');
-    } else if (planName === 'Growth') {
+    } else if (planOrService === 'Growth') {
       setDefaultService('Social Media Management');
-    } else if (planName === 'Dominator') {
+    } else if (planOrService === 'Dominator') {
       setDefaultService('Phone Support & Lead Handling');
+    } else if (planOrService) {
+      setDefaultService(planOrService);
     } else {
       setDefaultService('');
     }
@@ -31,31 +36,54 @@ export default function App() {
     setIsAdminOpen(true);
   };
 
+  const handleSelectService = (serviceId: string) => {
+    setSelectedServiceId(serviceId || null);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  const activeService = SERVICE_DETAILS.find(s => s.id === selectedServiceId);
+
   return (
     <div className="min-h-screen bg-[#fcfcfc] text-slate-900 selection:bg-amber-500/20 selection:text-amber-900 overflow-x-hidden">
       {/* Sticky Top Header */}
-      <Header onBookCall={() => handleBookCall()} onOpenAdmin={handleOpenAdmin} />
+      <Header 
+        onBookCall={() => handleBookCall()} 
+        onOpenAdmin={handleOpenAdmin} 
+        onSelectService={handleSelectService}
+      />
 
-      {/* Main Landing Folds */}
-      <main>
-        {/* Dark Hero Section */}
-        <Hero onBookCall={() => handleBookCall()} />
+      {/* Main Content Area */}
+      {activeService ? (
+        <ServiceDetailView 
+          service={activeService} 
+          onBack={() => handleSelectService('')} 
+          onBookCall={handleBookCall}
+        />
+      ) : (
+        <main>
+          {/* Dark Hero Section */}
+          <Hero onBookCall={() => handleBookCall()} />
 
-        {/* Gray trusted logo section & stats row */}
-        <Trust />
+          {/* Gray trusted logo section & stats row */}
+          <Trust />
 
-        {/* White 3-step growth explanation layout */}
-        <Steps />
+          {/* White 3-step growth explanation layout */}
+          <Steps />
 
-        {/* Light Gray pricing columns & benefits layout */}
-        <Pricing onBookCall={handleBookCall} />
+          {/* Light Gray pricing columns & benefits layout */}
+          <Pricing onBookCall={handleBookCall} />
 
-        {/* White Frequently Asked Questions & refund guarantee */}
-        <FAQAndReturn />
-      </main>
+          {/* White Frequently Asked Questions & refund guarantee */}
+          <FAQAndReturn />
+        </main>
+      )}
 
       {/* Sticky Dark Footer layout */}
-      <Footer onBookCall={() => handleBookCall()} onOpenAdmin={handleOpenAdmin} />
+      <Footer 
+        onBookCall={() => handleBookCall()} 
+        onOpenAdmin={handleOpenAdmin} 
+        onSelectService={handleSelectService}
+      />
 
       {/* Interactive step-by-step scheduling dialog */}
       <BookingModal

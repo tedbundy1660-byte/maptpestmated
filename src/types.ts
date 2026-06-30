@@ -26,3 +26,16 @@ export interface LeadSubmission {
   scheduledDate?: string;
   scheduledTime?: string;
 }
+
+export interface ServiceDetail {
+  id: string;
+  title: string;
+  tagline: string;
+  description: string;
+  keyFeatures: string[];
+  estimatedRoi: string;
+  iconName: string;
+  deliverables: string[];
+  pricingRange: string;
+}
+
