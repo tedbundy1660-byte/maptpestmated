@@ -42,10 +42,10 @@ export default function Footer({ onBookCall, onOpenAdmin, onSelectService }: Foo
               </div>
               <div>
                 <span className="font-display font-bold text-white text-base tracking-tight leading-none block">
-                  Local Growth
+                  MAPTO
                 </span>
                 <span className="font-mono text-[9px] font-bold text-amber-500 uppercase tracking-widest block mt-0.5">
-                  System
+                  ESTIMATE
                 </span>
               </div>
             </a>
@@ -127,7 +127,7 @@ export default function Footer({ onBookCall, onOpenAdmin, onSelectService }: Foo
               </li>
               <li className="flex gap-2 items-start">
                 <Mail size={13} className="text-amber-500 shrink-0 mt-0.5" />
-                <span className="hover:text-white transition-colors cursor-pointer break-all">info@localgrowthsystem.com</span>
+                <span className="hover:text-white transition-colors cursor-pointer break-all">growth@mapstoestimates.com</span>
               </li>
               <li className="flex gap-2 items-start">
                 <MapPin size={13} className="text-amber-500 shrink-0 mt-0.5" />
@@ -158,7 +158,7 @@ export default function Footer({ onBookCall, onOpenAdmin, onSelectService }: Foo
         {/* Bottom bar */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] text-slate-500">
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center md:text-left">
-            <span>© 2026 Local Growth System. All Rights Reserved.</span>
+            <span>© 2026 MAPTO ESTIMATE. All Rights Reserved.</span>
             <span className="hidden sm:inline text-slate-800">|</span>
             <button
               onClick={onOpenAdmin}
