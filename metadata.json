@@ -1,0 +1,6 @@
+{
+  "name": "Local Growth System",
+  "description": "A premium landing page and booking system for local service businesses to rank higher, get more calls, and convert leads into booked jobs.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
