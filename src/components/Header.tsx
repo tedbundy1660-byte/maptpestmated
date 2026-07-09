@@ -230,6 +230,17 @@ export default function Header({ onBookCall, onOpenAdmin, onSelectService }: Hea
                 {link.label}
               </a>
             ))}
+
+            <button
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                onOpenAdmin();
+              }}
+              className="text-slate-300 hover:text-white py-2 text-sm font-semibold border-b border-slate-900/40 text-left flex items-center gap-2 w-full"
+            >
+              <Database size={15} className="text-amber-500" />
+              <span>Leads Inbox Console</span>
+            </button>
           </div>
 
           <button
