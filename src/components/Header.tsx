@@ -32,7 +32,9 @@ export default function Header({ onBookCall, onOpenAdmin, onSelectService }: Hea
 
   const navLinks = [
     { label: 'Home', href: '#home' },
+    { label: 'Before & After', href: '#comparison' },
     { label: 'How It Works', href: '#how-it-works' },
+    { label: 'GBP Scanner', href: '#gmb-audit' },
     { label: 'Pricing', href: '#pricing' },
     { label: 'FAQ', href: '#faq' },
     { label: 'About Us', href: '#footer' },

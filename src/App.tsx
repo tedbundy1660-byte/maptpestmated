@@ -10,6 +10,8 @@ import BookingModal from './components/BookingModal';
 import AdminLeads from './components/AdminLeads';
 import ServiceDetailView from './components/ServiceDetailView';
 import { SERVICE_DETAILS } from './data';
+import BeforeAfter from './components/BeforeAfter';
+import GMBReviews from './components/GMBReviews';
 
 export default function App() {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -82,8 +84,14 @@ export default function App() {
           {/* Gray trusted logo section & stats row */}
           <Trust />
 
+          {/* Draggable Before & After visual comparison slider */}
+          <BeforeAfter />
+
           {/* White 3-step growth explanation layout */}
           <Steps />
+
+          {/* Google My Business Testimonials & Interactive Review Scanner tool */}
+          <GMBReviews />
 
           {/* Light Gray pricing columns & benefits layout */}
           <Pricing onBookCall={handleBookCall} />
