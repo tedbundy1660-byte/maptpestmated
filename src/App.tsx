@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import Header from './components/Header';
 import Hero from './components/Hero';
 import Trust from './components/Trust';
 import Steps from './components/Steps';
@@ -10,8 +9,6 @@ import BookingModal from './components/BookingModal';
 import AdminLeads from './components/AdminLeads';
 import ServiceDetailView from './components/ServiceDetailView';
 import { SERVICE_DETAILS } from './data';
-import BeforeAfter from './components/BeforeAfter';
-import GMBReviews from './components/GMBReviews';
 
 export default function App() {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -62,13 +59,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#fcfcfc] text-slate-900 selection:bg-amber-500/20 selection:text-amber-900 overflow-x-hidden">
-      {/* Sticky Top Header */}
-      <Header 
-        onBookCall={() => handleBookCall()} 
-        onOpenAdmin={handleOpenAdmin} 
-        onSelectService={handleSelectService}
-      />
-
       {/* Main Content Area */}
       {activeService ? (
         <ServiceDetailView 
@@ -84,14 +74,8 @@ export default function App() {
           {/* Gray trusted logo section & stats row */}
           <Trust />
 
-          {/* Draggable Before & After visual comparison slider */}
-          <BeforeAfter />
-
           {/* White 3-step growth explanation layout */}
           <Steps />
-
-          {/* Google My Business Testimonials & Interactive Review Scanner tool */}
-          <GMBReviews />
 
           {/* Light Gray pricing columns & benefits layout */}
           <Pricing onBookCall={handleBookCall} />

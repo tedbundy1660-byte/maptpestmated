@@ -40,19 +40,27 @@ export default function Footer({ onBookCall, onOpenAdmin, onSelectService }: Foo
                 e.preventDefault();
                 onSelectService('', '#home');
               }} 
-              className="inline-flex items-center gap-2.5 group"
+              className="inline-flex items-center gap-3.5 group"
             >
-              <div className="relative flex items-end gap-[3px] h-7 w-7 pb-1.5 pt-1 px-1 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <div className="w-[4px] h-[35%] bg-amber-500 rounded-sm" />
-                <div className="w-[4px] h-[65%] bg-amber-500 rounded-sm" />
-                <div className="w-[4px] h-[95%] bg-amber-500 rounded-sm" />
-                <div className="absolute right-0.5 top-1 w-1.5 h-1.5 rounded-full bg-amber-400" />
+              <div className="relative flex items-center justify-center h-10 w-10 rounded-xl bg-slate-900 border border-slate-700 shadow-lg group-hover:border-amber-500 group-hover:shadow-[0_0_15px_rgba(245,158,11,0.3)] transition-all duration-300 overflow-hidden">
+                {/* Radar circular rings with enhanced colors */}
+                <div className="absolute w-8 h-8 rounded-full border border-slate-800 group-hover:border-amber-500/10 transition-colors" />
+                <div className="absolute w-5 h-5 rounded-full border border-slate-700 group-hover:border-amber-500/30 group-hover:scale-110 transition-all duration-500" />
+                
+                {/* Crosshair target lines */}
+                <div className="absolute w-6 h-[1px] bg-slate-700 group-hover:bg-amber-500/40 transition-colors" />
+                <div className="absolute h-6 w-[1px] bg-slate-700 group-hover:bg-amber-500/40 transition-colors" />
+                
+                {/* Pulsating target center - highly visible amber */}
+                <div className="relative w-2 h-2 rounded-full bg-amber-500 flex items-center justify-center">
+                  <div className="absolute w-4 h-4 rounded-full bg-amber-500/60 animate-ping opacity-90" />
+                </div>
               </div>
               <div>
-                <span className="font-display font-bold text-white text-base tracking-tight leading-none block">
-                  MAPTO
+                <span className="font-display font-black text-white text-[18px] tracking-[0.08em] leading-none block">
+                  MAP <span className="text-amber-500 text-[19px] drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]">TO</span>
                 </span>
-                <span className="font-mono text-[9px] font-bold text-amber-500 uppercase tracking-widest block mt-0.5">
+                <span className="font-mono text-[9px] font-bold text-slate-300 uppercase tracking-[0.25em] block mt-1">
                   ESTIMATE
                 </span>
               </div>
@@ -166,7 +174,7 @@ export default function Footer({ onBookCall, onOpenAdmin, onSelectService }: Foo
         {/* Bottom bar */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] text-slate-500">
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center md:text-left">
-            <span>© 2026 MAPTO ESTIMATE. All Rights Reserved.</span>
+            <span>© 2026 MAP TO ESTIMATE. All Rights Reserved.</span>
             <span className="hidden sm:inline text-slate-800">|</span>
             <button
               onClick={onOpenAdmin}
