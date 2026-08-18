@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { PRICING_PLANS } from '../data';
 import { Check, Flame, MessageSquare, TrendingUp, Calendar, PhoneIncoming, Zap } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface PricingProps {
   onBookCall: (planName?: string) => void;
@@ -79,15 +80,19 @@ export default function Pricing({ onBookCall }: PricingProps) {
           
           {/* Pricing Plans Column Group (9 columns) */}
           <div className="lg:col-span-9 grid sm:grid-cols-3 gap-6 items-stretch">
-            {PRICING_PLANS.map((plan) => {
+            {PRICING_PLANS.map((plan, idx) => {
               const price = billingPeriod === 'monthly' ? plan.priceMonthly : plan.priceAnnually;
               
               return (
-                <div
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.5, delay: idx * 0.1 }}
                   key={plan.id}
                   className={`relative rounded-3xl p-6 flex flex-col justify-between transition-all duration-300 ${
                     plan.isPopular
-                      ? 'bg-white border-2 border-amber-500 shadow-2xl scale-105 sm:-translate-y-2'
+                      ? 'bg-white border-2 border-amber-500 shadow-2xl scale-105 sm:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(245,158,11,0.3)]'
                       : 'bg-white border border-slate-200 hover:border-slate-300 shadow-lg hover:shadow-xl'
                   }`}
                   id={`pricing-${plan.id}`}
@@ -160,14 +165,20 @@ export default function Pricing({ onBookCall }: PricingProps) {
                     </button>
                   </div>
 
-                </div>
+                </motion.div>
               );
             })}
           </div>
 
           {/* Right Column highlighted dark benefits card (3 columns) */}
           <div className="lg:col-span-3 flex">
-            <div className="relative w-full bg-slate-950 border border-slate-900 rounded-3xl p-6 flex flex-col justify-center space-y-6 text-slate-100 shadow-xl overflow-hidden">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="relative w-full bg-slate-950 border border-slate-900 rounded-3xl p-6 flex flex-col justify-center space-y-6 text-slate-100 shadow-xl overflow-hidden"
+            >
               <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent pointer-events-none" />
               
               {sideBenefits.map((benefit) => {
@@ -193,7 +204,7 @@ export default function Pricing({ onBookCall }: PricingProps) {
                 <span className="text-[10px] text-amber-500 font-bold uppercase tracking-widest block mb-1">Guaranteed Call Loops</span>
                 <p className="text-[10px] text-slate-500">Structured strictly for high ROI metrics</p>
               </div>
-            </div>
+            </motion.div>
           </div>
 
         </div>

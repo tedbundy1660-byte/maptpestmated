@@ -8,6 +8,8 @@ import Footer from './components/Footer';
 import BookingModal from './components/BookingModal';
 import AdminLeads from './components/AdminLeads';
 import ServiceDetailView from './components/ServiceDetailView';
+import GMBReport from './components/GMBReport';
+import ScrollProgress from './components/ScrollProgress';
 import { SERVICE_DETAILS } from './data';
 
 export default function App() {
@@ -59,6 +61,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#fcfcfc] text-slate-900 selection:bg-amber-500/20 selection:text-amber-900 overflow-x-hidden">
+      <ScrollProgress />
       {/* Main Content Area */}
       {activeService ? (
         <ServiceDetailView 
@@ -76,6 +79,9 @@ export default function App() {
 
           {/* White 3-step growth explanation layout */}
           <Steps />
+
+          {/* AI-Powered GMB Audit/Report Feature */}
+          <GMBReport />
 
           {/* Light Gray pricing columns & benefits layout */}
           <Pricing onBookCall={handleBookCall} />
