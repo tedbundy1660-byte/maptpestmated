@@ -3,7 +3,6 @@ import { Search, Loader2, RefreshCw, BarChart, AlertCircle, MapPin, Zap, PieChar
 import Markdown from 'react-markdown';
 import { motion } from 'motion/react';
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
 import { LineChart, Line, BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const MOCK_MARKDOWN = `## 📊 Local SEO & GMB Optimization Audit
@@ -12,7 +11,7 @@ Based on standard local search algorithms and common industry gaps, here is a ge
 
 ### 1. Visibility & Engagement Snapshot
 * **Profile Completeness Issues:** Most profiles are missing secondary categories and critical service attributes.
-* **Review Velocity:** Average. Consistent review generation is the #1 ranking factor currently underutilized.
+* **Review Velocity:** Poor. Consistent review generation is the #1 ranking factor currently underutilized, leading to major ranking drops vs competitors.
 * **Local Keyword Saturation:** Low. Service descriptions often lack geo-modified keywords (e.g., "[Service] in [City]").
 
 ### 2. High-Impact SEO Opportunities
@@ -28,11 +27,11 @@ Based on standard local search algorithms and common industry gaps, here is a ge
 `;
 
 const MOCK_DATA = {
-  score: 68,
+  score: 42,
   metrics: [
     { label: 'Profile Completeness', value: 65, status: 'warning', icon: AlertTriangle },
-    { label: 'Review Velocity', value: 85, status: 'good', icon: TrendingUp },
-    { label: 'Keyword Saturation', value: 30, status: 'poor', icon: AlertCircle }
+    { label: 'Review Velocity', value: 30, status: 'poor', icon: TrendingUp },
+    { label: 'Keyword Saturation', value: 45, status: 'warning', icon: AlertCircle }
   ],
   opportunities: [
     { title: 'Primary Category Alignment', desc: 'Ensure your primary category exactly matches the highest-volume search intent for your main service.' },
@@ -46,17 +45,17 @@ const MOCK_DATA = {
     { week: 4, title: 'Q&A Seeding', desc: 'Pre-populate the Google Q&A section with top questions.' }
   ],
   trafficData: [
-    { month: 'Jan', traffic: 120, optimized: 150 },
-    { month: 'Feb', traffic: 130, optimized: 180 },
-    { month: 'Mar', traffic: 125, optimized: 220 },
-    { month: 'Apr', traffic: 140, optimized: 280 },
-    { month: 'May', traffic: 150, optimized: 350 },
-    { month: 'Jun', traffic: 160, optimized: 420 }
+    { month: 'Jan', traffic: 120, optimized: 120 },
+    { month: 'Feb', traffic: 125, optimized: 145 },
+    { month: 'Mar', traffic: 122, optimized: 190 },
+    { month: 'Apr', traffic: 128, optimized: 260 },
+    { month: 'May', traffic: 125, optimized: 340 },
+    { month: 'Jun', traffic: 130, optimized: 450 }
   ],
   competitorData: [
-    { name: 'Your Biz', reviews: 45, color: '#3b82f6' },
-    { name: 'Competitor A', reviews: 156, color: '#cbd5e1' },
-    { name: 'Competitor B', reviews: 98, color: '#cbd5e1' }
+    { name: 'Competitor A', reviews: 312, color: '#cbd5e1' },
+    { name: 'Competitor B', reviews: 184, color: '#cbd5e1' },
+    { name: 'Your Biz', reviews: 45, color: '#3b82f6' }
   ]
 };
 
@@ -309,20 +308,32 @@ export default function GMBReport() {
       setIsPdfGenerating(true);
       
       const element = dashboardRef.current;
-      const canvas = await html2canvas(element, {
-        scale: 2, // High resolution
-        useCORS: true,
-        backgroundColor: '#ffffff'
+      
+      // Use html-to-image which has better modern CSS support than html2canvas
+      const { toPng } = await import('html-to-image');
+      const dataUrl = await toPng(element, {
+        quality: 1,
+        backgroundColor: '#ffffff',
+        pixelRatio: 2,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left'
+        }
       });
       
-      const imgData = canvas.toDataURL('image/png');
+      const imgProps = new Image();
+      imgProps.src = dataUrl;
+      await new Promise((resolve) => {
+        imgProps.onload = resolve;
+      });
+
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'px',
-        format: [canvas.width / 2, canvas.height / 2] // Fit exactly
+        format: [imgProps.width / 2, imgProps.height / 2] // Fit exactly
       });
       
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
+      pdf.addImage(dataUrl, 'PNG', 0, 0, imgProps.width / 2, imgProps.height / 2);
       pdf.save(`RankBoost_Audit_${url.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`);
       
     } catch (err) {
