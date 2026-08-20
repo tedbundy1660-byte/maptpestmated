@@ -14,10 +14,11 @@ export default function Footer({ onBookCall, onOpenAdmin, onSelectService }: Foo
   };
 
   const quickLinks = [
-    { label: 'Home', href: '#home', onClick: (e: React.MouseEvent) => { e.preventDefault(); onSelectService('', '#home'); } },
-    { label: 'How It Works', href: '#how-it-works', onClick: (e: React.MouseEvent) => { e.preventDefault(); onSelectService('', '#how-it-works'); } },
-    { label: 'Pricing', href: '#pricing', onClick: (e: React.MouseEvent) => { e.preventDefault(); onSelectService('', '#pricing'); } },
-    { label: 'FAQ', href: '#faq', onClick: (e: React.MouseEvent) => { e.preventDefault(); onSelectService('', '#faq'); } },
+    { label: 'Home', href: '/', onClick: (e: React.MouseEvent) => { e.preventDefault(); onSelectService('', '#home'); } },
+    { label: 'About Us', href: '/about', onClick: (e: React.MouseEvent) => { e.preventDefault(); onSelectService('', 'about'); } },
+    { label: 'Services', href: '/services', onClick: (e: React.MouseEvent) => { e.preventDefault(); onSelectService('', 'services'); } },
+    { label: 'Pricing', href: '/pricing', onClick: (e: React.MouseEvent) => { e.preventDefault(); onSelectService('', 'pricing'); } },
+    { label: 'Contact', href: '/contact', onClick: (e: React.MouseEvent) => { e.preventDefault(); onSelectService('', 'contact'); } },
   ];
 
   return (

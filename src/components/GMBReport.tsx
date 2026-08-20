@@ -264,25 +264,47 @@ export default function GMBReport() {
     setViewMode('visual'); // Default to visual on new generation
 
     try {
-      // Simulate network scan delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await fetch('/api/audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
 
-      // Reveal visual dashboard immediately
-      setReportData(MOCK_DATA);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate report');
+      }
 
-      // Simulate streaming output for text mode
+      const { reportData: liveData, markdownReport } = await response.json();
+      
+      // We must manually attach the React components (icons) to the metrics 
+      // since they cannot be serialized from the server JSON response.
+      const dataWithIcons = {
+        ...liveData,
+        metrics: liveData.metrics.map((m: any, idx: number) => {
+          let icon = AlertCircle;
+          if (m.label.includes('Completeness')) icon = AlertTriangle;
+          if (m.label.includes('Velocity')) icon = TrendingUp;
+          return { ...m, icon };
+        })
+      };
+
+      setReportData(dataWithIcons);
+
+      // Simulate streaming output for text mode to keep the cool effect
       let i = 0;
       const streamInterval = setInterval(() => {
-        setReportText(MOCK_MARKDOWN.slice(0, i + 10));
+        setReportText(markdownReport.slice(0, i + 10));
         i += 10;
-        if (i >= MOCK_MARKDOWN.length) {
+        if (i >= markdownReport.length) {
           clearInterval(streamInterval);
-          setReportText(MOCK_MARKDOWN); 
+          setReportText(markdownReport); 
           setIsLoading(false);
         }
       }, 20);
     } catch (err: any) {
-      setError('An unexpected error occurred while generating the report.');
+      console.error(err);
+      setError(err.message || 'An unexpected error occurred while generating the report.');
       setIsLoading(false);
     }
   };

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Phone, ArrowRight, CheckCircle, ShieldCheck, Zap, Sparkles, MapPin, Play, Heart, Star } from 'lucide-react';
 import { SERVICES } from '../data';
 import { LeadSubmission } from '../types';
+import TrustBadges from './TrustBadges';
 
 interface HeroProps {
   onBookCall: () => void;
@@ -174,6 +175,8 @@ export default function Hero({ onBookCall }: HeroProps) {
                 <p className="text-[10px] text-slate-500">Rated 4.9/5 stars nationwide</p>
               </div>
             </div>
+
+            <TrustBadges />
 
           </div>
 
