@@ -99,10 +99,10 @@ export default function Hero({ onBookCall }: HeroProps) {
 
             {/* Massive Headline */}
             <h1 className="font-display font-extrabold text-3xl sm:text-5xl lg:text-[54px] tracking-tight leading-[1.08] text-white">
-              More Calls. <br />
-              More Booked Jobs. <br />
+              Local SEO & Google <br />
+              Business Optimization. <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500">
-                More Revenue.
+                Get More Revenue.
               </span>
             </h1>
 

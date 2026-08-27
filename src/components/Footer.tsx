@@ -140,7 +140,7 @@ export default function Footer({ onBookCall, onOpenAdmin, onSelectService }: Foo
             <ul className="space-y-2.5 text-[11px] text-slate-400">
               <li className="flex gap-2 items-start">
                 <Phone size={13} className="text-amber-500 shrink-0 mt-0.5" />
-                <span className="font-mono hover:text-white transition-colors cursor-pointer">(888) 123-4567</span>
+                <a href="tel:+18881234567" className="font-mono hover:text-white transition-colors cursor-pointer">(888) 123-4567</a>
               </li>
               <li className="flex gap-2 items-start">
                 <Mail size={13} className="text-amber-500 shrink-0 mt-0.5" />

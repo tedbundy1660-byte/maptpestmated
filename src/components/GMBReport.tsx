@@ -303,7 +303,6 @@ export default function GMBReport() {
         }
       }, 20);
     } catch (err: any) {
-      console.error(err);
       setError(err.message || 'An unexpected error occurred while generating the report.');
       setIsLoading(false);
     }
@@ -359,7 +358,6 @@ export default function GMBReport() {
       pdf.save(`RankBoost_Audit_${url.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`);
       
     } catch (err) {
-      console.error("PDF generation failed", err);
       alert("Failed to generate PDF. Please try again.");
     } finally {
       setIsPdfGenerating(false);
@@ -494,7 +492,7 @@ export default function GMBReport() {
               <div className="p-6 md:p-8 bg-red-50 text-red-700 flex flex-col items-center justify-center text-center space-y-4 h-full flex-grow">
                 <AlertCircle size={40} className="text-red-500" />
                 <div>
-                  <h4 className="font-bold text-lg mb-1">Analysis Failed</h4>
+                  <h4 className="font-bold text-lg mb-1">{error.includes("couldn't find") ? "Business Not Found" : "Analysis Failed"}</h4>
                   <p className="text-sm opacity-90">{error}</p>
                 </div>
               </div>

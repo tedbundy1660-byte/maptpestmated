@@ -27,27 +27,75 @@ async function startServer() {
         return res.status(500).json({ error: 'GOOGLE_MAPS_API_KEY is not configured on the server.' });
       }
 
-      // Step 1: Text Search to find the business
-      const searchRes = await fetch('https://places.googleapis.com/v1/places:searchText', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Goog-Api-Key': apiKey,
-          'X-Goog-FieldMask': 'places.id,places.displayName,places.rating,places.userRatingCount,places.primaryType,places.location,places.regularOpeningHours,places.nationalPhoneNumber,places.websiteUri,places.formattedAddress,places.businessStatus,places.reviews'
-        },
-        body: JSON.stringify({ textQuery: url })
-      });
-      const searchData = await searchRes.json();
-      
-      if (searchData.error) {
-        console.error('Google Maps API Error:', searchData.error);
-        const errorMsg = typeof searchData.error === 'string' ? searchData.error : (searchData.error.message || JSON.stringify(searchData.error));
-        return res.status(500).json({ error: `Google Maps API Error: ${errorMsg}` });
+      let textQuery = url;
+      let placeId = null;
+
+      try {
+        if (url.startsWith('http') || url.includes('g.page') || url.includes('google.com')) {
+          const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
+          
+          if (urlObj.searchParams.has('placeid')) {
+            placeId = urlObj.searchParams.get('placeid');
+          } else if (urlObj.searchParams.has('q')) {
+            textQuery = urlObj.searchParams.get('q');
+          } else if (urlObj.hostname === 'g.page') {
+            const parts = urlObj.pathname.split('/').filter(Boolean);
+            if (parts.length > 0 && parts[0] !== 'r') {
+              textQuery = parts[0].replace(/-/g, ' ');
+            } else if (parts[0] === 'r') {
+              // We can't resolve shortlinks server-side reliably, so we will throw a specific hint later if not found
+            }
+          }
+        }
+      } catch (e) {
+        // ignore parse errors
       }
 
-      const place = searchData.places?.[0];
+      let place = null;
+
+      if (placeId) {
+        // If we found a direct Place ID in the GMB link
+        const placeRes = await fetch(`https://places.googleapis.com/v1/places/${placeId}`, {
+          method: 'GET',
+          headers: {
+            'X-Goog-Api-Key': apiKey,
+            'X-Goog-FieldMask': 'id,displayName,rating,userRatingCount,primaryType,location,regularOpeningHours,nationalPhoneNumber,websiteUri,formattedAddress,businessStatus,reviews'
+          }
+        });
+        const placeData = await placeRes.json();
+        if (!placeData.error && placeData.id) {
+          place = placeData;
+        }
+      }
+
       if (!place) {
-        return res.status(404).json({ error: 'Business not found on Google Maps. Try adding city and state.' });
+        // Step 1: Text Search to find the business
+        const searchRes = await fetch('https://places.googleapis.com/v1/places:searchText', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Goog-Api-Key': apiKey,
+            'X-Goog-FieldMask': 'places.id,places.displayName,places.rating,places.userRatingCount,places.primaryType,places.location,places.regularOpeningHours,places.nationalPhoneNumber,places.websiteUri,places.formattedAddress,places.businessStatus,places.reviews'
+          },
+          body: JSON.stringify({ textQuery: textQuery })
+        });
+        const searchData = await searchRes.json();
+        
+        if (searchData.error) {
+          console.error('Google Maps API Error:', searchData.error);
+          const errorMsg = typeof searchData.error === 'string' ? searchData.error : (searchData.error.message || JSON.stringify(searchData.error));
+          return res.status(500).json({ error: `Google Maps API Error: ${errorMsg}` });
+        }
+        
+        place = searchData.places?.[0];
+      }
+
+      if (!place) {
+        const isUrl = url.startsWith('http') || url.includes('g.page');
+        const hint = isUrl 
+          ? "We couldn't extract the business from this link. Please enter the Business Name and City manually (e.g., 'Joe's Pizza New York')." 
+          : "Try adding the city and state to your search (e.g., 'Joe's Pizza New York').";
+        return res.status(404).json({ error: `We couldn't find that business on Google Maps. ${hint}` });
       }
 
       // Extract new details
