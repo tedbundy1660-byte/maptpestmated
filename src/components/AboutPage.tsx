@@ -79,6 +79,35 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* Credentials & E-E-A-T */}
+      <section className="py-20 bg-slate-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="font-display font-bold text-3xl mb-12">Industry Credentials & Certifications</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="flex flex-col items-center p-6 bg-slate-800 rounded-2xl">
+              <Award className="text-amber-500 mb-4" size={40} />
+              <h3 className="font-bold text-lg mb-2">Google Partner</h3>
+              <p className="text-sm text-slate-400">Certified in Google Ads and Analytics</p>
+            </div>
+            <div className="flex flex-col items-center p-6 bg-slate-800 rounded-2xl">
+              <ShieldCheck className="text-blue-500 mb-4" size={40} />
+              <h3 className="font-bold text-lg mb-2">Local SEO Certified</h3>
+              <p className="text-sm text-slate-400">Advanced Local Search Experts</p>
+            </div>
+            <div className="flex flex-col items-center p-6 bg-slate-800 rounded-2xl">
+              <Zap className="text-yellow-500 mb-4" size={40} />
+              <h3 className="font-bold text-lg mb-2">Top Rated Agency</h3>
+              <p className="text-sm text-slate-400">Clutch & UpCity Recognized</p>
+            </div>
+            <div className="flex flex-col items-center p-6 bg-slate-800 rounded-2xl">
+              <Users className="text-emerald-500 mb-4" size={40} />
+              <h3 className="font-bold text-lg mb-2">BBB Accredited</h3>
+              <p className="text-sm text-slate-400">A+ Rating for Business Ethics</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="py-24 bg-slate-50 border-t border-slate-100">
         <div className="max-w-4xl mx-auto px-4 text-center">

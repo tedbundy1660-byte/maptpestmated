@@ -79,7 +79,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-900">Email</h4>
-                    <a href="mailto:hello@rankboostpro.com" className="text-slate-600 hover:text-amber-500 transition-colors">hello@rankboostpro.com</a>
+                    <a href="mailto:info@mapstoestimates.com" className="text-slate-600 hover:text-amber-500 transition-colors">info@mapstoestimates.com</a>
                   </div>
                 </div>
                 
@@ -89,7 +89,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-900">Phone</h4>
-                    <a href="tel:+18005550199" className="text-slate-600 hover:text-amber-500 transition-colors">1 (800) 555-0199</a>
+                    <a href="tel:+16572141380" className="text-slate-600 hover:text-amber-500 transition-colors">(657) 214-1380</a>
                   </div>
                 </div>
 
@@ -98,8 +98,8 @@ export default function ContactPage() {
                     <MapPin className="text-amber-600" size={24} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-900">Headquarters</h4>
-                    <p className="text-slate-600">100 Innovation Way<br />San Francisco, CA 94105</p>
+                    <h4 className="font-bold text-slate-900">Google Business Profile</h4>
+                    <a href="https://share.google/PWtcGzQQc4JMSTT83" target="_blank" rel="noopener noreferrer" className="text-slate-600 hover:text-amber-500 transition-colors font-medium">View our Google Maps Profile</a>
                   </div>
                 </div>
               </div>
@@ -112,6 +112,19 @@ export default function ContactPage() {
               <button className="bg-white text-slate-900 hover:bg-slate-100 font-bold px-5 py-2.5 rounded-lg text-sm transition-colors w-full relative z-10">
                 Book a Strategy Call
               </button>
+            </div>
+
+            {/* Google Maps Embed */}
+            <div className="w-full h-48 bg-slate-200 rounded-2xl overflow-hidden mt-8 border border-slate-200">
+              <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1m3!1d3153.019280338781!2d-122.39572422329712!3d37.78964347198126!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80858066f1c79a95%3A0xc3af8cfb3cd20df2!2s100%20Innovation%20Way%2C%20San%20Francisco%2C%20CA%2094105!5e0!3m2!1sen!2sus!4v1700000000000!5m2!1sen!2sus" 
+                width="100%" 
+                height="100%" 
+                style={{ border: 0 }} 
+                allowFullScreen={true} 
+                loading="lazy" 
+                referrerPolicy="no-referrer-when-downgrade">
+              </iframe>
             </div>
           </div>
 

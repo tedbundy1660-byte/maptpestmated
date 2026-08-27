@@ -140,15 +140,15 @@ export default function Footer({ onBookCall, onOpenAdmin, onSelectService }: Foo
             <ul className="space-y-2.5 text-[11px] text-slate-400">
               <li className="flex gap-2 items-start">
                 <Phone size={13} className="text-amber-500 shrink-0 mt-0.5" />
-                <a href="tel:+18881234567" className="font-mono hover:text-white transition-colors cursor-pointer">(888) 123-4567</a>
+                <a href="tel:+16572141380" className="font-mono hover:text-white transition-colors cursor-pointer">(657) 214-1380</a>
               </li>
               <li className="flex gap-2 items-start">
                 <Mail size={13} className="text-amber-500 shrink-0 mt-0.5" />
-                <span className="hover:text-white transition-colors cursor-pointer break-all">growth@mapstoestimates.com</span>
+                <a href="mailto:info@mapstoestimates.com" className="hover:text-white transition-colors cursor-pointer break-all">info@mapstoestimates.com</a>
               </li>
               <li className="flex gap-2 items-start">
                 <MapPin size={13} className="text-amber-500 shrink-0 mt-0.5" />
-                <span>123 Growth Way, Suite 100 Austin, TX 78701</span>
+                <a href="https://share.google/PWtcGzQQc4JMSTT83" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors cursor-pointer">View our Google Business Profile</a>
               </li>
             </ul>
           </div>

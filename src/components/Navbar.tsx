@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Rocket } from 'lucide-react';
+import { Menu, X, Rocket, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface NavbarProps {
@@ -78,7 +78,18 @@ export default function Navbar({ onBookCall }: NavbarProps) {
             </nav>
 
             {/* Desktop CTA */}
-            <div className="hidden md:flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-6">
+              <a 
+                href="tel:+16572141380" 
+                className={`flex items-center gap-2 text-sm font-bold transition-colors ${
+                  isScrolled || location.pathname !== '/' 
+                    ? 'text-slate-700 hover:text-amber-500' 
+                    : 'text-slate-700 lg:text-slate-200 lg:hover:text-white hover:text-amber-500'
+                }`}
+              >
+                <Phone size={16} className={isScrolled || location.pathname !== '/' ? 'text-amber-500' : 'text-amber-500'} />
+                (657) 214-1380
+              </a>
               <button
                 onClick={onBookCall}
                 className="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition-all shadow-sm shadow-amber-500/20 hover:shadow-md hover:-translate-y-0.5"
@@ -124,6 +135,13 @@ export default function Navbar({ onBookCall }: NavbarProps) {
                 </Link>
               ))}
               <div className="mt-8 pt-8 border-t border-slate-100">
+                <a 
+                  href="tel:+16572141380" 
+                  className="flex items-center justify-center gap-2 w-full text-slate-700 font-bold text-lg mb-4"
+                >
+                  <Phone size={20} className="text-amber-500" />
+                  (657) 214-1380
+                </a>
                 <button
                   onClick={() => {
                     setIsMobileMenuOpen(false);

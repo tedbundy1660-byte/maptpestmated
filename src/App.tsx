@@ -14,6 +14,8 @@ import GMBReport from './components/GMBReport';
 import ScrollProgress from './components/ScrollProgress';
 import AboutPage from './components/AboutPage';
 import ContactPage from './components/ContactPage';
+import Testimonials from './components/Testimonials';
+import ServiceAreas from './components/ServiceAreas';
 import { SERVICE_DETAILS } from './data';
 
 // Wrapper for Home Page
@@ -23,6 +25,8 @@ const HomePage = ({ onBookCall }: { onBookCall: (p?: string) => void }) => (
     <Trust />
     <Steps />
     <Pricing onBookCall={onBookCall} />
+    <Testimonials />
+    <ServiceAreas />
   </main>
 );
 
