@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useGoogleLogin } from '@react-oauth/google';
 import { X, Calendar as CalendarIcon, Clock, CheckCircle2, ChevronRight, Phone, Mail, Building, Briefcase, Sparkles, AlertCircle } from 'lucide-react';
 import { SERVICES } from '../data';
 import { LeadSubmission } from '../types';
@@ -23,6 +24,107 @@ export default function BookingModal({ isOpen, onClose, defaultService = '' }: B
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [calendarSyncStatus, setCalendarSyncStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [oauthErrorMsg, setOauthErrorMsg] = useState<string>('');
+
+  const getGoogleCalendarUrl = () => {
+    if (!selectedDate || !selectedTime) return 'https://calendar.google.com';
+    try {
+      const eventDate = new Date(`${selectedDate} ${selectedTime}`);
+      const eventEndDate = new Date(eventDate.getTime() + 15 * 60000); // 15 mins
+      const startStr = eventDate.toISOString().replace(/-|:|\.\d+/g, '');
+      const endStr = eventEndDate.toISOString().replace(/-|:|\.\d+/g, '');
+      const title = `Growth Strategy Call: ${formData.businessName || formData.fullName}`;
+      const details = `Local Growth Strategy Call\nRepresentative: ${formData.fullName}\nPhone: ${formData.phoneNumber}\nEmail: ${formData.emailAddress}\nService: ${formData.service}\n\nMapstoestimates Team`;
+      const location = `Phone Call (${formData.phoneNumber})`;
+      return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startStr}/${endStr}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(location)}`;
+    } catch (e) {
+      return 'https://calendar.google.com';
+    }
+  };
+
+  const downloadIcsFile = () => {
+    if (!selectedDate || !selectedTime) return;
+    try {
+      const eventDate = new Date(`${selectedDate} ${selectedTime}`);
+      const eventEndDate = new Date(eventDate.getTime() + 15 * 60000);
+      const startStr = eventDate.toISOString().replace(/-|:|\.\d+/g, '');
+      const endStr = eventEndDate.toISOString().replace(/-|:|\.\d+/g, '');
+      const icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Mapstoestimates//Booking//EN',
+        'BEGIN:VEVENT',
+        `UID:${Date.now()}@mapstoestimates.com`,
+        `DTSTAMP:${startStr}`,
+        `DTSTART:${startStr}`,
+        `DTEND:${endStr}`,
+        `SUMMARY:Growth Strategy Call: ${formData.businessName || formData.fullName}`,
+        `DESCRIPTION:Representative: ${formData.fullName}\\nPhone: ${formData.phoneNumber}\\nEmail: ${formData.emailAddress}\\nService: ${formData.service}`,
+        `LOCATION:Phone Call (${formData.phoneNumber})`,
+        'STATUS:CONFIRMED',
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\r\n');
+
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'strategy-call.ics');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const addToCalendar = useGoogleLogin({
+    scope: 'https://www.googleapis.com/auth/calendar.events',
+    onSuccess: async (tokenResponse) => {
+      setCalendarSyncStatus('loading');
+      setOauthErrorMsg('');
+      try {
+        const eventDate = new Date(`${selectedDate} ${selectedTime}`);
+        const eventEndDate = new Date(eventDate.getTime() + 15 * 60000); // 15 mins
+        
+        const event = {
+          summary: `Growth Strategy Call with ${formData.businessName || formData.fullName}`,
+          description: `Call with ${formData.fullName}\nPhone: ${formData.phoneNumber}\nEmail: ${formData.emailAddress}\nService: ${formData.service}`,
+          start: {
+            dateTime: eventDate.toISOString(),
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          },
+          end: {
+            dateTime: eventEndDate.toISOString(),
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          },
+        };
+
+        const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${tokenResponse.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(event),
+        });
+
+        if (response.ok) {
+          setCalendarSyncStatus('success');
+        } else {
+          setCalendarSyncStatus('error');
+        }
+      } catch (err) {
+        setCalendarSyncStatus('error');
+      }
+    },
+    onError: (err) => {
+      setCalendarSyncStatus('error');
+      setOauthErrorMsg(err?.error_description || 'OAuth access restricted.');
+    }
+  });
 
   // Generate next 7 days (skipping Sundays)
   const getNextDays = () => {
@@ -92,9 +194,15 @@ export default function BookingModal({ isOpen, onClose, defaultService = '' }: B
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (step === 3) {
+      setIsSubmitting(true);
+      setSubmitError('');
+
       const newSubmission: LeadSubmission = {
         id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11),
         fullName: formData.fullName,
@@ -120,7 +228,38 @@ export default function BookingModal({ isOpen, onClose, defaultService = '' }: B
 
       // Notify other views (like leads panel)
       window.dispatchEvent(new Event('lead-submitted'));
-      setStep(4);
+
+      // Send the email via the backend API
+      try {
+        const response = await fetch('/api/send-booking', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fullName: formData.fullName,
+            phoneNumber: formData.phoneNumber,
+            businessName: formData.businessName,
+            emailAddress: formData.emailAddress,
+            service: formData.service,
+            selectedDate,
+            selectedTime
+          }),
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+          // We can still proceed to step 4 even if email fails in preview, 
+          // but we can log the error or show a warning.
+          console.warn('Email sending failed:', data.error);
+        }
+      } catch (error) {
+        console.error('Error sending booking request:', error);
+      } finally {
+        setIsSubmitting(false);
+        setStep(4);
+      }
     }
   };
 
@@ -472,6 +611,40 @@ export default function BookingModal({ isOpen, onClose, defaultService = '' }: B
                   <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
                     A local growth specialist will call you at <strong className="text-slate-200">{formData.phoneNumber}</strong> at the scheduled time. Please have your Google Business Profile access ready if possible!
                   </p>
+
+                  <div className="mt-6 pt-6 border-t border-slate-800 space-y-3">
+                    <p className="text-xs font-semibold text-slate-300">Add to your calendar:</p>
+                    <div className="flex flex-wrap items-center justify-center gap-2.5">
+                      {/* Direct 1-click Google Calendar Link (Always Works without OAuth limits) */}
+                      <a
+                        href={getGoogleCalendarUrl()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 bg-white hover:bg-slate-100 text-slate-900 font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-md shadow-white/5 hover:scale-[1.02]"
+                        id="direct-google-cal-btn"
+                      >
+                        <CalendarIcon size={14} className="text-blue-600" />
+                        <span>Google Calendar</span>
+                      </a>
+
+                      {/* Apple / Outlook .ics download */}
+                      <button
+                        type="button"
+                        onClick={downloadIcsFile}
+                        className="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium px-4 py-2 rounded-xl text-xs transition-all border border-slate-700"
+                        id="download-ics-btn"
+                      >
+                        <Clock size={14} className="text-amber-400" />
+                        <span>Apple / Outlook (.ics)</span>
+                      </button>
+                    </div>
+
+                    {calendarSyncStatus === 'success' && (
+                      <div className="flex items-center justify-center gap-1.5 text-emerald-400 text-xs font-medium pt-1">
+                        <CheckCircle2 size={14} /> Auto-synced to your connected Google Calendar!
+                      </div>
+                    )}
+                  </div>
                 </motion.div>
               )}
             </div>
@@ -492,11 +665,12 @@ export default function BookingModal({ isOpen, onClose, defaultService = '' }: B
                   <button
                     type="button"
                     onClick={step === 3 ? handleSubmit : handleNextStep}
-                    className="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 px-4 rounded-xl text-sm transition-all shadow-md shadow-amber-500/10 flex items-center justify-center gap-1.5"
+                    disabled={step === 3 && isSubmitting}
+                    className="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 px-4 rounded-xl text-sm transition-all shadow-md shadow-amber-500/10 flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                     id="modal-next-btn"
                   >
-                    <span>{step === 3 ? 'Confirm & Book Free Call' : 'Continue'}</span>
-                    <ChevronRight size={16} />
+                    <span>{step === 3 && isSubmitting ? 'Booking...' : (step === 3 ? 'Confirm & Book Free Call' : 'Continue')}</span>
+                    {!(step === 3 && isSubmitting) && <ChevronRight size={16} />}
                   </button>
                 </>
               ) : (

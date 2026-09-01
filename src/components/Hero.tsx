@@ -4,6 +4,30 @@ import { SERVICES } from '../data';
 import { LeadSubmission } from '../types';
 import TrustBadges from './TrustBadges';
 
+const getNextDays = () => {
+  const days = [];
+  const options: Intl.DateTimeFormatOptions = { weekday: 'short', month: 'short', day: 'numeric' };
+  let added = 0;
+  let i = 1;
+
+  while (added < 6) {
+    const nextDate = new Date();
+    nextDate.setDate(new Date().getDate() + i);
+    
+    if (nextDate.getDay() !== 0) { // Skip Sunday
+      const dateStr = nextDate.toISOString().split('T')[0];
+      const label = nextDate.toLocaleDateString('en-US', options);
+      days.push({ value: dateStr, label });
+      added++;
+    }
+    i++;
+  }
+  return days;
+};
+
+const DAYS = getNextDays();
+const TIME_SLOTS = ['9:00 AM', '10:30 AM', '1:00 PM', '2:30 PM', '4:00 PM', '5:30 PM'];
+
 interface HeroProps {
   onBookCall: () => void;
 }
@@ -14,10 +38,13 @@ export default function Hero({ onBookCall }: HeroProps) {
     phoneNumber: '',
     businessName: '',
     emailAddress: '',
-    service: SERVICES[0]
+    service: SERVICES[0],
+    selectedDate: '',
+    selectedTime: ''
   });
 
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validateForm = () => {
@@ -35,17 +62,16 @@ export default function Hero({ onBookCall }: HeroProps) {
       newErrors.emailAddress = 'Enter a valid email address';
     }
 
+    if (!formData.selectedDate) newErrors.selectedDate = 'Date is required';
+    if (!formData.selectedTime) newErrors.selectedTime = 'Time is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      const today = new Date();
-      const tomorrow = new Date();
-      tomorrow.setDate(today.getDate() + 1);
-      const dateStr = tomorrow.toISOString().split('T')[0];
+      setIsSubmitting(true);
 
       const newSubmission: LeadSubmission = {
         id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11),
@@ -56,8 +82,8 @@ export default function Hero({ onBookCall }: HeroProps) {
         service: formData.service,
         submittedAt: new Date().toISOString(),
         status: 'new',
-        scheduledDate: dateStr,
-        scheduledTime: '10:30 AM' // Default slot for inline fast submission
+        scheduledDate: formData.selectedDate,
+        scheduledTime: formData.selectedTime
       };
 
       const existingLeadsStr = localStorage.getItem('local-growth-leads') || '[]';
@@ -70,7 +96,28 @@ export default function Hero({ onBookCall }: HeroProps) {
       }
 
       window.dispatchEvent(new Event('lead-submitted'));
-      setIsSubmitted(true);
+
+      // Send the booking to email
+      try {
+        await fetch('/api/send-booking', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fullName: formData.fullName,
+            phoneNumber: formData.phoneNumber,
+            businessName: formData.businessName,
+            emailAddress: formData.emailAddress,
+            service: formData.service,
+            selectedDate: formData.selectedDate,
+            selectedTime: formData.selectedTime
+          }),
+        });
+      } catch (error) {
+        console.error('Failed to send booking email:', error);
+      } finally {
+        setIsSubmitting(false);
+        setIsSubmitted(true);
+      }
     }
   };
 
@@ -267,12 +314,69 @@ export default function Hero({ onBookCall }: HeroProps) {
                     </select>
                   </div>
 
+                  {/* Date and Time Inputs */}
+                  <div className="space-y-4 pt-1">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Select Date *</label>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {DAYS.map(day => (
+                          <button
+                            key={day.value}
+                            type="button"
+                            onClick={() => {
+                              setFormData({ ...formData, selectedDate: day.value });
+                              setErrors({ ...errors, selectedDate: '' });
+                            }}
+                            className={`p-2 rounded-lg border text-center transition-all flex flex-col items-center justify-center gap-0.5 ${
+                              formData.selectedDate === day.value
+                                ? 'bg-amber-500 border-amber-500 text-slate-950 font-bold'
+                                : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-amber-300 hover:bg-amber-50/50'
+                            }`}
+                          >
+                            <span className="text-[10px]">{day.label.split(',')[0]}</span>
+                            <span className={formData.selectedDate === day.value ? 'text-slate-950 text-[10px]' : 'text-slate-400 font-mono text-[9px]'}>
+                              {day.label.split(',')[1]}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                      {errors.selectedDate && <p className="text-[10px] text-red-500">{errors.selectedDate}</p>}
+                    </div>
+
+                    {formData.selectedDate && (
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Select Time *</label>
+                        <div className="grid grid-cols-3 gap-1.5">
+                          {TIME_SLOTS.map((time) => (
+                            <button
+                              key={time}
+                              type="button"
+                              onClick={() => {
+                                setFormData({ ...formData, selectedTime: time });
+                                setErrors({ ...errors, selectedTime: '' });
+                              }}
+                              className={`p-2 rounded-lg border text-center transition-all text-[10px] ${
+                                formData.selectedTime === time
+                                  ? 'bg-amber-500 border-amber-500 text-slate-950 font-bold'
+                                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-amber-300 hover:bg-amber-50/50'
+                              }`}
+                            >
+                              {time}
+                            </button>
+                          ))}
+                        </div>
+                        {errors.selectedTime && <p className="text-[10px] text-red-500">{errors.selectedTime}</p>}
+                      </div>
+                    )}
+                  </div>
+
                   <button
                     type="submit"
-                    className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold py-3.5 px-4 rounded-xl text-xs tracking-wider transition-colors shadow-md mt-2"
+                    disabled={isSubmitting}
+                    className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold py-3.5 px-4 rounded-xl text-xs tracking-wider transition-colors shadow-md mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     id="hero-submit-btn"
                   >
-                    Book My Free Call
+                    {isSubmitting ? 'Booking...' : 'Book My Free Call'}
                   </button>
 
                   {/* Proof and Trust Tags */}

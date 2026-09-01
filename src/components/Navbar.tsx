@@ -28,7 +28,7 @@ export default function Navbar({ onBookCall }: NavbarProps) {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Services', path: '/services' },
-    { name: 'Free Audit', path: '/audit' },
+    { name: 'SEO Analyzer', path: 'https://seo-analyzer-lovat.vercel.app/', external: true },
     { name: 'Pricing', path: '/pricing' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
@@ -59,18 +59,19 @@ export default function Navbar({ onBookCall }: NavbarProps) {
             <nav className="hidden md:flex items-center gap-8">
               {navLinks.map((link) => {
                 const isActive = location.pathname === link.path;
-                return (
-                  <Link
-                    key={link.name}
-                    to={link.path}
-                    className={`text-sm font-bold transition-colors ${
-                      isActive 
-                        ? 'text-amber-500' 
-                        : isScrolled || location.pathname !== '/'
-                          ? 'text-slate-600 hover:text-slate-900' 
-                          : 'text-slate-600 lg:text-slate-200 lg:hover:text-white hover:text-slate-900'
-                    }`}
-                  >
+                const linkClass = `text-sm font-bold transition-colors ${
+                  isActive 
+                    ? 'text-amber-500' 
+                    : isScrolled || location.pathname !== '/'
+                      ? 'text-slate-600 hover:text-slate-900' 
+                      : 'text-slate-600 lg:text-slate-200 lg:hover:text-white hover:text-slate-900'
+                }`;
+                return link.external ? (
+                  <a key={link.name} href={link.path} target="_blank" rel="noopener noreferrer" className={linkClass}>
+                    {link.name}
+                  </a>
+                ) : (
+                  <Link key={link.name} to={link.path} className={linkClass}>
                     {link.name}
                   </Link>
                 );
@@ -123,17 +124,20 @@ export default function Navbar({ onBookCall }: NavbarProps) {
             className="fixed inset-0 z-40 bg-white pt-24 px-6 pb-6 overflow-y-auto"
           >
             <div className="flex flex-col gap-6">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.path}
-                  className={`text-2xl font-display font-bold ${
-                    location.pathname === link.path ? 'text-amber-500' : 'text-slate-900'
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              ))}
+              {navLinks.map((link) => {
+                const linkClass = `text-2xl font-display font-bold ${
+                  location.pathname === link.path ? 'text-amber-500' : 'text-slate-900'
+                }`;
+                return link.external ? (
+                  <a key={link.name} href={link.path} target="_blank" rel="noopener noreferrer" className={linkClass} onClick={() => setIsMobileMenuOpen(false)}>
+                    {link.name}
+                  </a>
+                ) : (
+                  <Link key={link.name} to={link.path} className={linkClass}>
+                    {link.name}
+                  </Link>
+                );
+              })}
               <div className="mt-8 pt-8 border-t border-slate-100">
                 <a 
                   href="tel:+16572141380" 

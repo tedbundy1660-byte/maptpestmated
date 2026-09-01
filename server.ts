@@ -2,6 +2,7 @@ import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
+import nodemailer from 'nodemailer';
 
 // Load environment variables for development
 dotenv.config();
@@ -15,6 +16,194 @@ async function startServer() {
   // Health check
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok' });
+  });
+
+  // Booking Email API
+  app.post('/api/send-booking', async (req, res) => {
+    const { fullName, emailAddress, phoneNumber, businessName, service, selectedDate, selectedTime } = req.body;
+
+    try {
+      if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+        console.warn('SMTP credentials not configured. Returning success for dev mode.');
+        // In a real app, you might want to return an error if email is strictly required.
+        // For preview environments, we might simulate success if config is missing, 
+        // but here we will return a proper error so the user knows to configure it.
+        return res.status(500).json({ error: 'Email SMTP credentials not configured.' });
+      }
+
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+
+      // Construct dates for the .ics file
+      const eventDate = new Date(`${selectedDate} ${selectedTime}`);
+      const eventEndDate = new Date(eventDate.getTime() + 15 * 60000); // 15 mins
+      
+      const formatIcsDate = (date: Date) => {
+        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      };
+
+      const startStr = formatIcsDate(eventDate);
+      const endStr = formatIcsDate(eventEndDate);
+
+      const icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Mapstoestimates//Booking//EN',
+        'BEGIN:VEVENT',
+        `UID:${Date.now()}@mapstoestimates.com`,
+        `DTSTAMP:${startStr}`,
+        `DTSTART:${startStr}`,
+        `DTEND:${endStr}`,
+        `SUMMARY:Growth Strategy Call: ${businessName || fullName}`,
+        `DESCRIPTION:Representative: ${fullName}\\nPhone: ${phoneNumber}\\nEmail: ${emailAddress}\\nService: ${service}`,
+        `LOCATION:Phone Call (${phoneNumber})`,
+        'STATUS:CONFIRMED',
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\r\n');
+
+      const mailOptions = {
+        from: `"Mapstoestimates Booking" <${process.env.SMTP_USER}>`,
+        to: `${emailAddress}, info@mapstoestimates.com`, // Send to both
+        subject: `Confirmed: Growth Strategy Call - ${businessName || fullName}`,
+        text: `Hello ${fullName},\n\nYour strategy call is confirmed for ${selectedDate} at ${selectedTime}.\n\nService: ${service}\nPhone: ${phoneNumber}\nBusiness: ${businessName || 'N/A'}\n\nAn invite has been attached to this email to add to your calendar.\n\nBest,\nMapstoestimates Team`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #3b82f6;">Strategy Call Confirmed!</h2>
+            <p>Hello <strong>${fullName}</strong>,</p>
+            <p>Your growth strategy call has been successfully scheduled.</p>
+            
+            <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 0 0 10px 0;"><strong>📅 Date:</strong> ${selectedDate}</p>
+              <p style="margin: 0 0 10px 0;"><strong>⏰ Time:</strong> ${selectedTime}</p>
+              <p style="margin: 0 0 10px 0;"><strong>📞 Phone:</strong> ${phoneNumber}</p>
+              <p style="margin: 0 0 10px 0;"><strong>🎯 Service:</strong> ${service}</p>
+              ${businessName ? `<p style="margin: 0;"><strong>🏢 Business:</strong> ${businessName}</p>` : ''}
+            </div>
+            
+            <p>Please find the calendar invitation attached to this email.</p>
+            <p>Best regards,<br/><strong>Mapstoestimates Team</strong></p>
+          </div>
+        `,
+        attachments: [
+          {
+            filename: 'strategy-call.ics',
+            content: icsContent,
+            contentType: 'text/calendar; charset=utf-8; method=REQUEST'
+          }
+        ]
+      };
+
+      await transporter.sendMail(mailOptions);
+      res.json({ success: true, message: 'Booking email sent successfully' });
+    } catch (error) {
+      console.error('Email Sending Error:', error);
+      res.status(500).json({ error: 'Failed to send booking email.' });
+    }
+  });
+
+  // Quick Lead Form (Hero) Email API
+  app.post('/api/send-lead', async (req, res) => {
+    const { fullName, phoneNumber, businessName, emailAddress, service } = req.body;
+
+    try {
+      if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+        console.warn('SMTP credentials not configured. Returning success for dev mode.');
+        return res.status(500).json({ error: 'Email SMTP credentials not configured.' });
+      }
+
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+
+      const mailOptions = {
+        from: `"Mapstoestimates Lead" <${process.env.SMTP_USER}>`,
+        to: `info@mapstoestimates.com`, 
+        subject: `New Lead Request from ${businessName || fullName}`,
+        text: `You have received a new strategy call request from the homepage.\n\nName: ${fullName}\nBusiness: ${businessName}\nPhone: ${phoneNumber}\nEmail: ${emailAddress}\nService: ${service}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #f59e0b;">New Strategy Call Lead Request</h2>
+            
+            <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 0 0 10px 0;"><strong>Name:</strong> ${fullName}</p>
+              <p style="margin: 0 0 10px 0;"><strong>Business:</strong> ${businessName}</p>
+              <p style="margin: 0 0 10px 0;"><strong>Phone:</strong> ${phoneNumber}</p>
+              <p style="margin: 0 0 10px 0;"><strong>Email:</strong> ${emailAddress}</p>
+              <p style="margin: 0 0 10px 0;"><strong>Service:</strong> ${service}</p>
+            </div>
+            <p>Please reach out to them to schedule their strategy call.</p>
+          </div>
+        `
+      };
+
+      await transporter.sendMail(mailOptions);
+      res.json({ success: true, message: 'Lead email sent successfully' });
+    } catch (error) {
+      console.error('Email Sending Error:', error);
+      res.status(500).json({ error: 'Failed to send lead email.' });
+    }
+  });
+
+  // Contact Form Email API
+  app.post('/api/send-contact', async (req, res) => {
+    const { firstName, lastName, email, message } = req.body;
+
+    try {
+      if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+        console.warn('SMTP credentials not configured. Returning success for dev mode.');
+        return res.status(500).json({ error: 'Email SMTP credentials not configured.' });
+      }
+
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+
+      const mailOptions = {
+        from: `"Mapstoestimates Contact" <${process.env.SMTP_USER}>`,
+        to: `info@mapstoestimates.com`, 
+        replyTo: email,
+        subject: `New Contact Form Submission from ${firstName} ${lastName}`,
+        text: `You have received a new message from the contact form.\n\nName: ${firstName} ${lastName}\nEmail: ${email}\n\nMessage:\n${message}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #3b82f6;">New Contact Form Submission</h2>
+            
+            <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 0 0 10px 0;"><strong>Name:</strong> ${firstName} ${lastName}</p>
+              <p style="margin: 0 0 10px 0;"><strong>Email:</strong> ${email}</p>
+              <h3 style="margin: 15px 0 5px 0; font-size: 16px;">Message:</h3>
+              <p style="margin: 0; white-space: pre-wrap;">${message}</p>
+            </div>
+          </div>
+        `
+      };
+
+      await transporter.sendMail(mailOptions);
+      res.json({ success: true, message: 'Contact email sent successfully' });
+    } catch (error) {
+      console.error('Email Sending Error:', error);
+      res.status(500).json({ error: 'Failed to send contact email.' });
+    }
   });
 
   // Google Maps Audit API
