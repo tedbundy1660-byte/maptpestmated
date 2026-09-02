@@ -485,7 +485,7 @@ export default function BookingModal({ isOpen, onClose, defaultService = '' }: B
                       className="space-y-2 pt-2 border-t border-slate-800/50"
                     >
                       <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                        <Clock size={12} className="text-slate-400" /> Available Time Slots (Central Time)
+                        <Clock size={12} className="text-slate-400" /> Available Time Slots (Texas Time / CT)
                       </label>
                       <div className="grid grid-cols-3 gap-2">
                         {timeSlots.map(time => (

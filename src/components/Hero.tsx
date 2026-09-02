@@ -345,7 +345,7 @@ export default function Hero({ onBookCall }: HeroProps) {
 
                     {formData.selectedDate && (
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Select Time *</label>
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Select Time (Texas Time / CT) *</label>
                         <div className="grid grid-cols-3 gap-1.5">
                           {TIME_SLOTS.map((time) => (
                             <button

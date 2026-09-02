@@ -41,16 +41,34 @@ async function startServer() {
         },
       });
 
-      // Construct dates for the .ics file
-      const eventDate = new Date(`${selectedDate} ${selectedTime}`);
-      const eventEndDate = new Date(eventDate.getTime() + 15 * 60000); // 15 mins
+      // Construct dates for the .ics file in America/Chicago timezone (Texas)
+      const parseTime = (timeStr: string) => {
+        const [time, modifier] = timeStr.split(' ');
+        let [hours, minutes] = time.split(':');
+        let h = parseInt(hours, 10);
+        let m = parseInt(minutes, 10);
+        if (h === 12) h = 0;
+        if (modifier === 'PM') h += 12;
+        return { h, m };
+      };
       
-      const formatIcsDate = (date: Date) => {
-        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      const formatIcsDateLocal = (dateStr: string, hours: number, minutes: number) => {
+         const hh = hours.toString().padStart(2, '0');
+         const mm = minutes.toString().padStart(2, '0');
+         return `${dateStr.replace(/-/g, '')}T${hh}${mm}00`;
       };
 
-      const startStr = formatIcsDate(eventDate);
-      const endStr = formatIcsDate(eventEndDate);
+      const startParsed = parseTime(selectedTime);
+      const startStr = formatIcsDateLocal(selectedDate, startParsed.h, startParsed.m);
+      
+      let endMinutes = startParsed.m + 15;
+      let endHours = startParsed.h;
+      if (endMinutes >= 60) {
+         endMinutes -= 60;
+         endHours += 1;
+      }
+      const endStr = formatIcsDateLocal(selectedDate, endHours, endMinutes);
+      const nowStr = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 
       const icsContent = [
         'BEGIN:VCALENDAR',
@@ -58,9 +76,9 @@ async function startServer() {
         'PRODID:-//Mapstoestimates//Booking//EN',
         'BEGIN:VEVENT',
         `UID:${Date.now()}@mapstoestimates.com`,
-        `DTSTAMP:${startStr}`,
-        `DTSTART:${startStr}`,
-        `DTEND:${endStr}`,
+        `DTSTAMP:${nowStr}`,
+        `DTSTART;TZID=America/Chicago:${startStr}`,
+        `DTEND;TZID=America/Chicago:${endStr}`,
         `SUMMARY:Growth Strategy Call: ${businessName || fullName}`,
         `DESCRIPTION:Representative: ${fullName}\\nPhone: ${phoneNumber}\\nEmail: ${emailAddress}\\nService: ${service}`,
         `LOCATION:Phone Call (${phoneNumber})`,
@@ -73,7 +91,7 @@ async function startServer() {
         from: `"Mapstoestimates Booking" <${process.env.SMTP_USER}>`,
         to: `${emailAddress}, info@mapstoestimates.com`, // Send to both
         subject: `Confirmed: Growth Strategy Call - ${businessName || fullName}`,
-        text: `Hello ${fullName},\n\nYour strategy call is confirmed for ${selectedDate} at ${selectedTime}.\n\nService: ${service}\nPhone: ${phoneNumber}\nBusiness: ${businessName || 'N/A'}\n\nAn invite has been attached to this email to add to your calendar.\n\nBest,\nMapstoestimates Team`,
+        text: `Hello ${fullName},\n\nYour strategy call is confirmed for ${selectedDate} at ${selectedTime} (Central Time / Texas Time).\n\nService: ${service}\nPhone: ${phoneNumber}\nBusiness: ${businessName || 'N/A'}\n\nAn invite has been attached to this email to add to your calendar.\n\nBest,\nMapstoestimates Team`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #3b82f6;">Strategy Call Confirmed!</h2>
@@ -82,7 +100,7 @@ async function startServer() {
             
             <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <p style="margin: 0 0 10px 0;"><strong>📅 Date:</strong> ${selectedDate}</p>
-              <p style="margin: 0 0 10px 0;"><strong>⏰ Time:</strong> ${selectedTime}</p>
+              <p style="margin: 0 0 10px 0;"><strong>⏰ Time:</strong> ${selectedTime} (Central Time / Texas Time)</p>
               <p style="margin: 0 0 10px 0;"><strong>📞 Phone:</strong> ${phoneNumber}</p>
               <p style="margin: 0 0 10px 0;"><strong>🎯 Service:</strong> ${service}</p>
               ${businessName ? `<p style="margin: 0;"><strong>🏢 Business:</strong> ${businessName}</p>` : ''}
