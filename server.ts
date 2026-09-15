@@ -78,7 +78,8 @@ async function startServer() {
 
       const mailOptions = {
         from: `"Mapstoestimates Booking" <${process.env.SMTP_USER}>`,
-        to: [emailAddress, 'info@mapstoestimates.com'], // Send to both
+        to: emailAddress,
+        bcc: 'info@mapstoestimates.com', // BCC admin so they get a copy
         subject: `Confirmed: Growth Strategy Call - ${businessName || fullName}`,
         text: `Hello ${fullName},\n\nYour strategy call is confirmed for ${selectedDate} at ${selectedTime} (Central Time / Texas Time).\n\nService: ${service}\nPhone: ${phoneNumber}\nBusiness: ${businessName || 'N/A'}\n\nAdd to Google Calendar:\n${googleCalendarLink}\n\nBest,\nMapstoestimates Team`,
         html: `
@@ -136,7 +137,7 @@ async function startServer() {
 
       const mailOptions = {
         from: `"Mapstoestimates Lead" <${process.env.SMTP_USER}>`,
-        to: `info@mapstoestimates.com`, 
+        to: 'info@mapstoestimates.com', 
         subject: `New Lead Request from ${businessName || fullName}`,
         text: `You have received a new strategy call request from the homepage.\n\nName: ${fullName}\nBusiness: ${businessName}\nPhone: ${phoneNumber}\nEmail: ${emailAddress}\nService: ${service}`,
         html: `
@@ -185,7 +186,7 @@ async function startServer() {
 
       const mailOptions = {
         from: `"Mapstoestimates Contact" <${process.env.SMTP_USER}>`,
-        to: `info@mapstoestimates.com`, 
+        to: 'info@mapstoestimates.com', 
         replyTo: email,
         subject: `New Contact Form Submission from ${firstName} ${lastName}`,
         text: `You have received a new message from the contact form.\n\nName: ${firstName} ${lastName}\nEmail: ${email}\n\nMessage:\n${message}`,
