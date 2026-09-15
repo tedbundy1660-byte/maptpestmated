@@ -4,13 +4,16 @@ import { Mail, Phone, MapPin, Send, CheckCircle } from 'lucide-react';
 export default function ContactPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError('');
 
     const form = e.currentTarget;
     const formData = new FormData(form);
+
     const data = {
       firstName: formData.get('firstName'),
       lastName: formData.get('lastName'),
@@ -19,19 +22,24 @@ export default function ContactPage() {
     };
 
     try {
-      await fetch('/api/send-contact', {
+      const response = await fetch('/api/send-contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      // Continue and show success regardless of preview environment errors
-    } catch (error) {
-      console.error('Failed to submit contact form:', error);
-    } finally {
-      setIsSubmitting(false);
+
+      if (!response.ok) {
+         throw new Error('Server returned an error');
+      }
+
       setIsSubmitted(true);
       form.reset();
       setTimeout(() => setIsSubmitted(false), 5000);
+    } catch (error) {
+      console.error('Failed to submit contact form:', error);
+      setSubmitError('Failed to send message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -87,6 +95,12 @@ export default function ContactPage() {
                 <textarea required name="message" rows={4} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all resize-none"></textarea>
               </div>
               
+              {submitError && (
+                <div className="bg-red-50 text-red-500 p-3 rounded-xl text-sm text-center border border-red-100">
+                  {submitError}
+                </div>
+              )}
+
               <button type="submit" disabled={isSubmitting} className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-70">
                 {isSubmitting ? 'Sending...' : <><Send size={18} /> Send Message</>}
               </button>

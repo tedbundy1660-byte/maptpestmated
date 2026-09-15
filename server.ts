@@ -89,7 +89,7 @@ async function startServer() {
 
       const mailOptions = {
         from: `"Mapstoestimates Booking" <${process.env.SMTP_USER}>`,
-        to: `${emailAddress}, info@mapstoestimates.com`, // Send to both
+        to: [emailAddress, 'info@mapstoestimates.com'], // Send to both
         subject: `Confirmed: Growth Strategy Call - ${businessName || fullName}`,
         text: `Hello ${fullName},\n\nYour strategy call is confirmed for ${selectedDate} at ${selectedTime} (Central Time / Texas Time).\n\nService: ${service}\nPhone: ${phoneNumber}\nBusiness: ${businessName || 'N/A'}\n\nAn invite has been attached to this email to add to your calendar.\n\nBest,\nMapstoestimates Team`,
         html: `

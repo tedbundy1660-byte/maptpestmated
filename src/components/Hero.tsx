@@ -45,6 +45,7 @@ export default function Hero({ onBookCall }: HeroProps) {
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validateForm = () => {
@@ -99,7 +100,8 @@ export default function Hero({ onBookCall }: HeroProps) {
 
       // Send the booking to email
       try {
-        await fetch('/api/send-booking', {
+        setSubmitError('');
+        const response = await fetch('/api/send-booking', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -112,11 +114,16 @@ export default function Hero({ onBookCall }: HeroProps) {
             selectedTime: formData.selectedTime
           }),
         });
+        
+        if (!response.ok) {
+           throw new Error('Server returned an error');
+        }
+        setIsSubmitted(true);
       } catch (error) {
         console.error('Failed to send booking email:', error);
+        setSubmitError('Failed to send booking email. Please try again.');
       } finally {
         setIsSubmitting(false);
-        setIsSubmitted(true);
       }
     }
   };
@@ -369,6 +376,12 @@ export default function Hero({ onBookCall }: HeroProps) {
                       </div>
                     )}
                   </div>
+                  
+                  {submitError && (
+                    <div className="bg-red-50 text-red-500 p-3 rounded-xl text-xs text-center border border-red-100">
+                      {submitError}
+                    </div>
+                  )}
 
                   <button
                     type="submit"
