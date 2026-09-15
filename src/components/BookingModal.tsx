@@ -250,15 +250,14 @@ export default function BookingModal({ isOpen, onClose, defaultService = '' }: B
         const data = await response.json();
         
         if (!response.ok) {
-          // We can still proceed to step 4 even if email fails in preview, 
-          // but we can log the error or show a warning.
-          console.warn('Email sending failed:', data.error);
+          throw new Error(data.error || 'Failed to send email');
         }
+        setStep(4);
       } catch (error) {
         console.error('Error sending booking request:', error);
+        setSubmitError('Failed to send booking email. Please try again.');
       } finally {
         setIsSubmitting(false);
-        setStep(4);
       }
     }
   };
@@ -648,6 +647,12 @@ export default function BookingModal({ isOpen, onClose, defaultService = '' }: B
                 </motion.div>
               )}
             </div>
+            
+            {submitError && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 mx-6 mb-4 rounded-xl text-sm text-center font-medium">
+                {submitError}
+              </div>
+            )}
 
             {/* Footer buttons */}
             <div className="border-t border-slate-800 bg-slate-950/40 px-6 py-4 flex gap-3">

@@ -68,30 +68,19 @@ async function startServer() {
          endHours += 1;
       }
       const endStr = formatIcsDateLocal(selectedDate, endHours, endMinutes);
-      const nowStr = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 
-      const icsContent = [
-        'BEGIN:VCALENDAR',
-        'VERSION:2.0',
-        'PRODID:-//Mapstoestimates//Booking//EN',
-        'BEGIN:VEVENT',
-        `UID:${Date.now()}@mapstoestimates.com`,
-        `DTSTAMP:${nowStr}`,
-        `DTSTART;TZID=America/Chicago:${startStr}`,
-        `DTEND;TZID=America/Chicago:${endStr}`,
-        `SUMMARY:Growth Strategy Call: ${businessName || fullName}`,
-        `DESCRIPTION:Representative: ${fullName}\\nPhone: ${phoneNumber}\\nEmail: ${emailAddress}\\nService: ${service}`,
-        `LOCATION:Phone Call (${phoneNumber})`,
-        'STATUS:CONFIRMED',
-        'END:VEVENT',
-        'END:VCALENDAR'
-      ].join('\r\n');
+      const googleCalendarLink = `https://calendar.google.com/calendar/render?action=TEMPLATE`
+        + `&text=${encodeURIComponent(`Growth Strategy Call: ${businessName || fullName}`)}`
+        + `&dates=${startStr}/${endStr}`
+        + `&details=${encodeURIComponent(`Representative: ${fullName}\nPhone: ${phoneNumber}\nEmail: ${emailAddress}\nService: ${service}`)}`
+        + `&location=${encodeURIComponent(`Phone Call (${phoneNumber})`)}`
+        + `&ctz=America/Chicago`;
 
       const mailOptions = {
         from: `"Mapstoestimates Booking" <${process.env.SMTP_USER}>`,
         to: [emailAddress, 'info@mapstoestimates.com'], // Send to both
         subject: `Confirmed: Growth Strategy Call - ${businessName || fullName}`,
-        text: `Hello ${fullName},\n\nYour strategy call is confirmed for ${selectedDate} at ${selectedTime} (Central Time / Texas Time).\n\nService: ${service}\nPhone: ${phoneNumber}\nBusiness: ${businessName || 'N/A'}\n\nAn invite has been attached to this email to add to your calendar.\n\nBest,\nMapstoestimates Team`,
+        text: `Hello ${fullName},\n\nYour strategy call is confirmed for ${selectedDate} at ${selectedTime} (Central Time / Texas Time).\n\nService: ${service}\nPhone: ${phoneNumber}\nBusiness: ${businessName || 'N/A'}\n\nAdd to Google Calendar:\n${googleCalendarLink}\n\nBest,\nMapstoestimates Team`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #3b82f6;">Strategy Call Confirmed!</h2>
@@ -106,17 +95,15 @@ async function startServer() {
               ${businessName ? `<p style="margin: 0;"><strong>🏢 Business:</strong> ${businessName}</p>` : ''}
             </div>
             
-            <p>Please find the calendar invitation attached to this email.</p>
+            <p style="margin: 20px 0;">
+              <a href="${googleCalendarLink}" target="_blank" style="background-color: #4285F4; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                Add to Google Calendar
+              </a>
+            </p>
+            
             <p>Best regards,<br/><strong>Mapstoestimates Team</strong></p>
           </div>
-        `,
-        attachments: [
-          {
-            filename: 'strategy-call.ics',
-            content: icsContent,
-            contentType: 'text/calendar; charset=utf-8; method=REQUEST'
-          }
-        ]
+        `
       };
 
       await transporter.sendMail(mailOptions);
