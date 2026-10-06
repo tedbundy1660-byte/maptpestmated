@@ -58,7 +58,7 @@ async function startServer() {
     const { fullName, emailAddress, phoneNumber, businessName, service, selectedDate, selectedTime } = req.body || {};
 
     const clientName = (fullName && typeof fullName === 'string' && fullName.trim()) ? fullName.trim() : 'Valued Client';
-    const clientEmail = (emailAddress && typeof emailAddress === 'string') ? emailAddress.trim() : '';
+    const clientEmail = (emailAddress && typeof emailAddress === 'string') ? emailAddress.trim().toLowerCase() : '';
     const clientPhone = (phoneNumber && typeof phoneNumber === 'string' && phoneNumber.trim()) ? phoneNumber.trim() : 'Not provided';
     const clientService = service || 'Local SEO Growth Strategy';
     const clientBusiness = businessName ? String(businessName).trim() : '';
@@ -114,45 +114,81 @@ async function startServer() {
       + `&location=${encodeURIComponent(`Phone Call (${clientPhone})`)}`
       + `&ctz=America/Chicago`;
 
-    // Asynchronously dispatch the notification email with graceful fallback
+    // Asynchronously dispatch notifications to both client and admin team
     let emailSent = false;
     try {
       if (SMTP_USER && SMTP_PASS) {
-        const mailOptions = {
-          from: `"Mapstoestimates Booking" <${SMTP_USER}>`,
-          to: (clientEmail && clientEmail.includes('@')) ? clientEmail : SMTP_USER,
-          bcc: SMTP_USER, // Admin receives a copy
-          subject: `Confirmed: Growth Strategy Call - ${clientBusiness || clientName}`,
-          text: `Hello ${clientName},\n\nYour strategy call is confirmed for ${safeDate} at ${safeTime} (Central Time / Texas Time).\n\nService: ${clientService}\nPhone: ${clientPhone}\nBusiness: ${clientBusiness || 'N/A'}\n\nAdd to Google Calendar:\n${googleCalendarLink}\n\nBest,\nMapstoestimates Team`,
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
-              <h2 style="color: #d97706; margin-top: 0;">Strategy Call Confirmed!</h2>
-              <p>Hello <strong>${clientName}</strong>,</p>
-              <p>Your growth strategy call has been successfully scheduled. We look forward to speaking with you!</p>
-              
-              <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #f1f5f9;">
-                <p style="margin: 0 0 10px 0;"><strong>📅 Date:</strong> ${safeDate}</p>
-                <p style="margin: 0 0 10px 0;"><strong>⏰ Time:</strong> ${safeTime} (Central Time / Texas Time)</p>
-                <p style="margin: 0 0 10px 0;"><strong>📞 Phone:</strong> ${clientPhone}</p>
-                <p style="margin: 0 0 10px 0;"><strong>🎯 Service:</strong> ${clientService}</p>
-                ${clientBusiness ? `<p style="margin: 0;"><strong>🏢 Business:</strong> ${clientBusiness}</p>` : ''}
+        const ADMIN_EMAILS = ['info@mapstoestimates.com', 'faizanulhaq91@gmail.com'];
+
+        // 1. Send confirmation to the client (if valid email provided)
+        if (clientEmail && clientEmail.includes('@')) {
+          const clientMailOptions = {
+            from: `"Mapstoestimates Booking" <${SMTP_USER}>`,
+            to: clientEmail,
+            replyTo: SMTP_USER,
+            subject: `Confirmed: Growth Strategy Call - ${clientBusiness || clientName}`,
+            text: `Hello ${clientName},\n\nYour strategy call is confirmed for ${safeDate} at ${safeTime} (Central Time / Texas Time).\n\nService: ${clientService}\nPhone: ${clientPhone}\nBusiness: ${clientBusiness || 'N/A'}\n\nAdd to Google Calendar:\n${googleCalendarLink}\n\nBest,\nMapstoestimates Team`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
+                <h2 style="color: #d97706; margin-top: 0;">Strategy Call Confirmed!</h2>
+                <p>Hello <strong>${clientName}</strong>,</p>
+                <p>Your growth strategy call has been successfully scheduled. We look forward to speaking with you!</p>
+                
+                <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #f1f5f9;">
+                  <p style="margin: 0 0 10px 0;"><strong>📅 Date:</strong> ${safeDate}</p>
+                  <p style="margin: 0 0 10px 0;"><strong>⏰ Time:</strong> ${safeTime} (Central Time / Texas Time)</p>
+                  <p style="margin: 0 0 10px 0;"><strong>📞 Phone:</strong> ${clientPhone}</p>
+                  <p style="margin: 0 0 10px 0;"><strong>🎯 Service:</strong> ${clientService}</p>
+                  ${clientBusiness ? `<p style="margin: 0;"><strong>🏢 Business:</strong> ${clientBusiness}</p>` : ''}
+                </div>
+                
+                <p style="margin: 25px 0;">
+                  <a href="${googleCalendarLink}" target="_blank" style="background-color: #d97706; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                    📅 Add to Google Calendar
+                  </a>
+                </p>
+                
+                <p style="color: #64748b; font-size: 13px;">If you need to reschedule or have questions before our call, simply reply directly to this email.</p>
+                <p style="margin-top: 20px;">Best regards,<br/><strong>Mapstoestimates Team</strong></p>
               </div>
+            `
+          };
+          await transporter.sendMail(clientMailOptions);
+        }
+
+        // 2. Send instant admin alert directly to admin team (faizanulhaq91@gmail.com and info@mapstoestimates.com)
+        const adminMailOptions = {
+          from: `"Mapstoestimates System" <${SMTP_USER}>`,
+          to: ADMIN_EMAILS,
+          replyTo: (clientEmail && clientEmail.includes('@')) ? clientEmail : SMTP_USER,
+          subject: `🚨 New Strategy Call Booked: ${clientName} (${clientPhone})`,
+          text: `A new strategy call has been scheduled on the website!\n\nName: ${clientName}\nPhone: ${clientPhone}\nEmail: ${clientEmail || 'N/A'}\nBusiness: ${clientBusiness || 'N/A'}\nService: ${clientService}\nDate: ${safeDate}\nTime: ${safeTime} (Central Time)\n\nCalendar Link: ${googleCalendarLink}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f59e0b; border-radius: 12px; background-color: #ffffff;">
+              <h2 style="color: #b45309; margin-top: 0;">🚨 New Strategy Call Booked!</h2>
+              <p>You have a new appointment scheduled from the website.</p>
               
-              <p style="margin: 25px 0;">
-                <a href="${googleCalendarLink}" target="_blank" style="background-color: #d97706; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
-                  📅 Add to Google Calendar
+              <div style="background-color: #fef3c7; padding: 15px 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #fde68a;">
+                <p style="margin: 0 0 8px 0; font-size: 16px;"><strong>👤 Lead Name:</strong> ${clientName}</p>
+                <p style="margin: 0 0 8px 0; font-size: 16px;"><strong>📞 Phone Number:</strong> <a href="tel:${clientPhone}" style="color: #b45309; font-weight: bold;">${clientPhone}</a></p>
+                <p style="margin: 0 0 8px 0;"><strong>✉️ Email Address:</strong> ${clientEmail || 'N/A'}</p>
+                <p style="margin: 0 0 8px 0;"><strong>🏢 Business Name:</strong> ${clientBusiness || 'N/A'}</p>
+                <p style="margin: 0 0 8px 0;"><strong>🎯 Service:</strong> ${clientService}</p>
+                <p style="margin: 0; font-weight: bold; color: #92400e;"><strong>📅 Appointment:</strong> ${safeDate} at ${safeTime} (Central Time)</p>
+              </div>
+
+              <p style="margin: 20px 0;">
+                <a href="${googleCalendarLink}" target="_blank" style="background-color: #d97706; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                  View / Add to Google Calendar
                 </a>
               </p>
-              
-              <p style="color: #64748b; font-size: 13px;">If you need to reschedule or have questions before our call, simply reply directly to this email.</p>
-              <p style="margin-top: 20px;">Best regards,<br/><strong>Mapstoestimates Team</strong></p>
             </div>
           `
         };
+        await transporter.sendMail(adminMailOptions);
 
-        await transporter.sendMail(mailOptions);
         emailSent = true;
-        console.log(`Booking email dispatched successfully to ${clientEmail || SMTP_USER}`);
+        console.log(`Booking emails dispatched successfully to client and admin team (${ADMIN_EMAILS.join(', ')})`);
       }
     } catch (mailError: any) {
       console.warn('Booking email dispatch notice (handled gracefully):', mailError?.message || mailError);
@@ -179,11 +215,12 @@ async function startServer() {
     let emailSent = false;
     try {
       if (SMTP_USER && SMTP_PASS) {
+        const ADMIN_EMAILS = ['info@mapstoestimates.com', 'faizanulhaq91@gmail.com'];
         const mailOptions = {
           from: `"Mapstoestimates Lead" <${SMTP_USER}>`,
-          to: SMTP_USER, 
+          to: ADMIN_EMAILS, 
           replyTo: clientEmail.includes('@') ? clientEmail : undefined,
-          subject: `New Lead Request from ${clientBusiness !== 'N/A' ? clientBusiness : clientName}`,
+          subject: `🚨 New Lead Request: ${clientBusiness !== 'N/A' ? clientBusiness : clientName}`,
           text: `You have received a new strategy call request from the homepage.\n\nName: ${clientName}\nBusiness: ${clientBusiness}\nPhone: ${clientPhone}\nEmail: ${clientEmail}\nService: ${clientService}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -224,11 +261,12 @@ async function startServer() {
     let emailSent = false;
     try {
       if (SMTP_USER && SMTP_PASS) {
+        const ADMIN_EMAILS = ['info@mapstoestimates.com', 'faizanulhaq91@gmail.com'];
         const mailOptions = {
           from: `"Mapstoestimates Contact" <${SMTP_USER}>`,
-          to: SMTP_USER, 
+          to: ADMIN_EMAILS, 
           replyTo: clientEmail.includes('@') ? clientEmail : undefined,
-          subject: `New Contact Form Submission from ${clientName}`,
+          subject: `📩 Contact Form Message from ${clientName}`,
           text: `You have received a new message from the contact form.\n\nName: ${clientName}\nEmail: ${clientEmail || 'N/A'}\n\nMessage:\n${message || 'No message provided'}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
