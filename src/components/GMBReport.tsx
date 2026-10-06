@@ -267,6 +267,7 @@ export default function GMBReport() {
       const response = await fetch('/api/audit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ url })
       });
 
