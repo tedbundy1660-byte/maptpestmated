@@ -155,15 +155,18 @@ export default function BookingModal({ isOpen, onClose, defaultService = '' }: B
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.fullName.trim()) newErrors.fullName = 'Full Name is required';
+    
+    const phoneDigits = formData.phoneNumber.replace(/\D/g, '');
     if (!formData.phoneNumber.trim()) {
       newErrors.phoneNumber = 'Phone Number is required';
-    } else if (!/^\+?[\d\s-]{7,15}$/.test(formData.phoneNumber.trim())) {
+    } else if (phoneDigits.length < 7 || phoneDigits.length > 15) {
       newErrors.phoneNumber = 'Please enter a valid phone number';
     }
+    
     if (!formData.businessName.trim()) newErrors.businessName = 'Business Name is required';
     if (!formData.emailAddress.trim()) {
       newErrors.emailAddress = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.emailAddress)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emailAddress.trim())) {
       newErrors.emailAddress = 'Please enter a valid email address';
     }
     

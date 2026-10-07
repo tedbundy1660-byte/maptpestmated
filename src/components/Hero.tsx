@@ -50,15 +50,18 @@ export default function Hero({ onBookCall }: HeroProps) {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.fullName.trim()) newErrors.fullName = 'Full Name is required';
+    
+    const phoneDigits = formData.phoneNumber.replace(/\D/g, '');
     if (!formData.phoneNumber.trim()) {
       newErrors.phoneNumber = 'Phone Number is required';
-    } else if (!/^\+?[\d\s-]{7,15}$/.test(formData.phoneNumber.trim())) {
+    } else if (phoneDigits.length < 7 || phoneDigits.length > 15) {
       newErrors.phoneNumber = 'Enter a valid phone number';
     }
+    
     if (!formData.businessName.trim()) newErrors.businessName = 'Business name is required';
     if (!formData.emailAddress.trim()) {
       newErrors.emailAddress = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.emailAddress)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emailAddress.trim())) {
       newErrors.emailAddress = 'Enter a valid email address';
     }
 
