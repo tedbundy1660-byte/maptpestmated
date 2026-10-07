@@ -118,7 +118,7 @@ async function startServer() {
     let emailSent = false;
     try {
       if (SMTP_USER && SMTP_PASS) {
-        const ADMIN_EMAILS = ['info@mapstoestimates.com', 'faizanulhaq91@gmail.com'];
+        const ADMIN_EMAIL = SMTP_USER || 'info@mapstoestimates.com';
 
         // 1. Send confirmation to the client (if valid email provided)
         if (clientEmail && clientEmail.includes('@')) {
@@ -156,10 +156,10 @@ async function startServer() {
           await transporter.sendMail(clientMailOptions);
         }
 
-        // 2. Send instant admin alert directly to admin team (faizanulhaq91@gmail.com and info@mapstoestimates.com)
+        // 2. Send instant admin alert directly to business inbox (info@mapstoestimates.com)
         const adminMailOptions = {
           from: `"Mapstoestimates System" <${SMTP_USER}>`,
-          to: ADMIN_EMAILS,
+          to: ADMIN_EMAIL,
           replyTo: (clientEmail && clientEmail.includes('@')) ? clientEmail : SMTP_USER,
           subject: `🚨 New Strategy Call Booked: ${clientName} (${clientPhone})`,
           text: `A new strategy call has been scheduled on the website!\n\nName: ${clientName}\nPhone: ${clientPhone}\nEmail: ${clientEmail || 'N/A'}\nBusiness: ${clientBusiness || 'N/A'}\nService: ${clientService}\nDate: ${safeDate}\nTime: ${safeTime} (Central Time)\n\nCalendar Link: ${googleCalendarLink}`,
@@ -188,7 +188,7 @@ async function startServer() {
         await transporter.sendMail(adminMailOptions);
 
         emailSent = true;
-        console.log(`Booking emails dispatched successfully to client and admin team (${ADMIN_EMAILS.join(', ')})`);
+        console.log(`Booking emails dispatched successfully to client (${clientEmail}) and admin (${ADMIN_EMAIL})`);
       }
     } catch (mailError: any) {
       console.warn('Booking email dispatch notice (handled gracefully):', mailError?.message || mailError);
@@ -215,10 +215,9 @@ async function startServer() {
     let emailSent = false;
     try {
       if (SMTP_USER && SMTP_PASS) {
-        const ADMIN_EMAILS = ['info@mapstoestimates.com', 'faizanulhaq91@gmail.com'];
         const mailOptions = {
           from: `"Mapstoestimates Lead" <${SMTP_USER}>`,
-          to: ADMIN_EMAILS, 
+          to: SMTP_USER, 
           replyTo: clientEmail.includes('@') ? clientEmail : undefined,
           subject: `🚨 New Lead Request: ${clientBusiness !== 'N/A' ? clientBusiness : clientName}`,
           text: `You have received a new strategy call request from the homepage.\n\nName: ${clientName}\nBusiness: ${clientBusiness}\nPhone: ${clientPhone}\nEmail: ${clientEmail}\nService: ${clientService}`,
@@ -261,10 +260,9 @@ async function startServer() {
     let emailSent = false;
     try {
       if (SMTP_USER && SMTP_PASS) {
-        const ADMIN_EMAILS = ['info@mapstoestimates.com', 'faizanulhaq91@gmail.com'];
         const mailOptions = {
           from: `"Mapstoestimates Contact" <${SMTP_USER}>`,
-          to: ADMIN_EMAILS, 
+          to: SMTP_USER, 
           replyTo: clientEmail.includes('@') ? clientEmail : undefined,
           subject: `📩 Contact Form Message from ${clientName}`,
           text: `You have received a new message from the contact form.\n\nName: ${clientName}\nEmail: ${clientEmail || 'N/A'}\n\nMessage:\n${message || 'No message provided'}`,
