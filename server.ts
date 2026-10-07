@@ -3,6 +3,7 @@ import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
+import fs from 'fs';
 
 // Load environment variables for development
 dotenv.config();
@@ -64,6 +65,15 @@ async function startServer() {
     const clientBusiness = businessName ? String(businessName).trim() : '';
     const safeTime = (selectedTime && typeof selectedTime === 'string') ? selectedTime.trim() : '10:00 AM';
     const safeDate = (selectedDate && typeof selectedDate === 'string') ? selectedDate.trim() : new Date().toLocaleDateString('en-US');
+
+    try {
+      fs.appendFileSync(
+        path.join(process.cwd(), 'bookings.log'),
+        `[${new Date().toISOString()}] BOOKING: Name="${clientName}" Email="${clientEmail}" Phone="${clientPhone}" Business="${clientBusiness}" Date="${safeDate}" Time="${safeTime}"\n`
+      );
+    } catch (logErr) {
+      console.warn('Logging warning:', logErr);
+    }
 
     // Safe time parser with fallbacks
     const parseTime = (timeStr?: string) => {
